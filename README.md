@@ -5,7 +5,7 @@ Comitting something:
 git commit -m <message>
 
 Pushing:
-git push
+git push -u origin master
 
 Updating:
 git pull
