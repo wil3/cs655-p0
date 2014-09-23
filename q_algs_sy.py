@@ -54,17 +54,18 @@ class Router:
 
     def send(self):
         """The router sends a packet"""
-        packet = self.queue.pop()
-        logging.info("%s: sending packet %s" % (self.env.now, packet))
-        yield self.env.timeout(packet.get_sendingtime())
+        if self.queue.size() > 0:
+            packet = self.queue.pop()
+            logging.info("%s: sending packet %s" % (self.env.now, packet))
+            yield self.env.timeout(packet.get_sendingtime())
 
     def run(self, store):
         while True:
             # queue any incoming packets:
             packet = yield store.get()
-            router.receive(packet)
-            if router.queue.size() > 0:
-                router.send()
+            self.receive(packet)
+            # send next available packet
+            self.send() # TODO: this doesn't seem to be getting called
         
 class PacketSource: #TODO: make this more interesting
     """A class representing a packet source"""
