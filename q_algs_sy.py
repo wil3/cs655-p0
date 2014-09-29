@@ -1,5 +1,7 @@
 import simpy
 import logging
+from collections import deque
+
 logging.basicConfig(level=logging.INFO) #filename='router.log', 
 class Packet:
     """A class representing a single packet"""
@@ -46,18 +48,22 @@ class Router:
         logging.info("created a router")
         self.env = env
         self.queue = queue
+        self.q = deque()
         
     def receive(self, packet):
         """The router receives a packet"""
-        self.queue.push(packet)
+        #self.queue.push(packet)
+        self.q.append(packet)
         logging.info("%s: received packet %s" % (self.env.now, packet))
 
     def send(self):
+        print "q=", "|".join([str(pkt) for pkt in self.q])
         """The router sends a packet"""
-        if self.queue.size() > 0:
-            packet = self.queue.pop()
+        if len(self.q) > 0:
+            packet = self.q.popleft()
             logging.info("%s: sending packet %s" % (self.env.now, packet))
-            yield self.env.timeout(packet.get_sendingtime())
+            print packet.get_sendingtime()
+#            yield env.timeout(1)
 
     def run(self, store):
         while True:
@@ -66,6 +72,8 @@ class Router:
             self.receive(packet)
             # send next available packet
             self.send() # TODO: this doesn't seem to be getting called
+
+            yield env.timeout(1)
         
 class PacketSource: #TODO: make this more interesting
     """A class representing a packet source"""
