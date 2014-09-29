@@ -1,11 +1,19 @@
-import logging
-logging.getLogger("scapy.loading").setLevel(logging.CRITICAL)
-from scapy import *
+#import logging
+#logging.getLogger("scapy.loading").setLevel(logging.CRITICAL)
+#from scapy import *
 import random
 """
 
 """
 PKT_LEN_SIGMA = 20
+class Packet:
+    def __init__(self, src, dst, len, seq, dport):
+        self.src = src
+        self.dst = dst
+        self.len = len
+        self.seq = seq
+        self.dport = dport
+
 class TrafficSource:
 
     def __init__(self,env,store,dport,src,dst):
@@ -14,7 +22,6 @@ class TrafficSource:
         self.dport = dport
         self.src = src
         self.dst = dst 
-        self.seq = 0
 
 
     def tx(self, rate, len, var=False):
@@ -23,22 +30,23 @@ class TrafficSource:
         the len will be treated as the mean length
         and be sampled from exp distribution
         """
+        seq = 0
         while 1:
             if var:
                 #this distri can return 0 so make sure its at least 1 bit
                 l = int(random.expovariate(1.0/len)) + 1
             else:
                 l = len
-            pkt = self.build_pkt(l)
+            pkt = self.build_pkt(l,seq)
             tx_delay = pkt.len/rate
             yield self.env.timeout(tx_delay)
             yield self.store.put(pkt)
-            self.seq = self.seq + 1
+            seq = seq + 1
 
-    def build_pkt(self,l):
-
+    def build_pkt(self,l, seq):
+        p = Packet(self.src, self.dst, l, seq, self.dport)
         #l = random.gauss(mu_len,PKT_LEN_SIGMA)
-        p = IP(dst=self.dst,src=self.src, len=l)/TCP(dport=self.dport, seq=self.seq)
+      #  p = IP(dst=self.dst,src=self.src, len=l)/TCP(dport=self.dport, seq=self.seq)
         return p
 
     def __str__(self):

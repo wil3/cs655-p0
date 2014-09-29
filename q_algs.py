@@ -4,7 +4,7 @@ logging.getLogger("scapy.loading").setLevel(logging.CRITICAL)
 import simpy
 
 from source import *
-from scapy import *
+#from scapy import *
 #This specifices how many packets we can receive at a time
 RECQ_SIZE = 5
 FTP_PORT = 20
@@ -37,7 +37,7 @@ def router_tx(env, store):
         #print 'Any packets at t=', env.now, '?'
         pkt = yield store.get() #Store is FIFO, when this is called the packet is consumed because the store is a generator
         #pkt = IP(data)
-        print env.now, '>> ip=', pkt.src +":"+str(pkt[TCP].dport) + "[" + str(pkt.len) + "]"
+        print env.now, '>> ip=', pkt.src +":"+str(pkt.dport) + "[" + str(pkt.len) + "]"
         yield env.timeout(3) #this is the tx time l/bps
         #print_queue(store.items)
 
