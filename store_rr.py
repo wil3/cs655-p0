@@ -70,6 +70,23 @@ class RRStore(QStore):
             self._log.append(packet)
             event.succeed(packet)
 
+    
+    def _get_queue_str(self,q):
+        pkts = ""
+        for pkt in q:
+            pkts += str(pkt.len) + "|"
+        return pkts
+
+    def __str__(self):
+        dmp = [] 
+        if self.__queues:
+            for q in self.__queues:
+                dmp.append(q[0] + "\t" + self._get_queue_str(self.__queues[q]))
+
+        bnd = "-------------\n"
+        return bnd + "\n".join(dmp) + "\n" + bnd
+
+
 def test_rrstore():
     """
     Test the round robin queue.

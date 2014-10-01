@@ -34,7 +34,7 @@ class TrafficSource:
             else:
                 l = len
             pkt = self.build_pkt(l,seq)
-            print "#", pkt_counter , " " , str(pkt)
+#            print "#", pkt_counter , " " , str(pkt)
             pkt_counter = pkt_counter + 1
             tx_delay = pkt.len/rate
 

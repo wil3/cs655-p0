@@ -1,4 +1,4 @@
-
+import logging
 import argparse
 import simpy
 from store_fifo import FIFOStore
@@ -19,21 +19,15 @@ class Router:
         self.env = env
         self.store = store
 
-    def print_queue(q):
-        pkts = ""
-        for pkt in q:
-            pkts += pkt.get_ip() + "|"
-        print pkts
-
     def tx(self):
         while True:
+            print str(self.store)
             #print 'Any packets at t=', env.now, '?'
             pkt = yield self.store.get() #Store is FIFO, when this is called the packet is consumed because the store is a generator
             #pkt = IP(data)
-            print self.env.now, '\t>>\t', str(pkt)
+            print '\t<<\t', str(pkt.src)
             yield self.env.timeout(pkt.len) #this is the tx time l/bps
-            #print_queue(store.items)
-            print self.env.now, '\t\t', str(pkt) , ">>"
+            #print self.env.now, '\t\t', str(pkt) , ">>"
 
 
 
@@ -57,7 +51,6 @@ if __name__ == "__main__":
 
     env = simpy.Environment()
     store = None
-    print store
     if args.fifo:
         store = FIFOStore(env) #simpy.Store(env, capacity=RECQ_SIZE)
     elif args.rr:
@@ -68,11 +61,11 @@ if __name__ == "__main__":
         assert False, "not given a router type argument"
 
 #create ftp sources
-    create_sources(env, store, 6, 100, FTP_PORT, 1, FTP_LENGTH, True)
+    create_sources(env, store, 2, 100, FTP_PORT, .1, FTP_LENGTH, True)
 #create telnet sources
-    create_sources(env, store, 4, 107, TELENET_PORT, 1, TELENET_LENGTH, True)
+    create_sources(env, store, 2, 107, TELENET_PORT, 1, TELENET_LENGTH, True)
     #Create rouge
-    create_sources(env, store, 1, 112, 6666, 0.5, 5000, False)
+    #create_sources(env, store, 1, 112, 6666, 0.5, 5000, False)
 
     router = Router(env,store)
     env.process(router.tx())
