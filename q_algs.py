@@ -1,7 +1,8 @@
 
 import argparse
 import simpy
-from store_fifo import *
+from store_fifo import FIFOStore
+from store_rr import RRStore
 from source import *
 #from scapy import *
 #This specifices how many packets we can receive at a time
@@ -56,12 +57,15 @@ if __name__ == "__main__":
 
     env = simpy.Environment()
     store = None
+    print store
     if args.fifo:
         store = FIFOStore(env) #simpy.Store(env, capacity=RECQ_SIZE)
     elif args.rr:
+        store = RRStore(env)
+    elif args.drr: #drr
         pass
-    else: #drr
-        pass
+    else:
+        assert False, "not given a router type argument"
 
 #create ftp sources
     create_sources(env, store, 6, 100, FTP_PORT, 1, FTP_LENGTH, True)
