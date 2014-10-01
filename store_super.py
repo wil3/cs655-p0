@@ -20,3 +20,14 @@ class QStore(simpy.Store):
     def get_log(self):
         """Returns the log."""
         return self._log
+
+    def _get_queue_str(self,q):
+        pkts = ""
+        for pkt in q:
+            pkts += str(pkt.len) + "|"
+        return pkts
+
+
+
+
+
