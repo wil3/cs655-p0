@@ -78,7 +78,8 @@ if __name__ == "__main__":
     
     #After the experiment as run this is the data that has been logged
     for pkt in store.get_log():
-        print str(pkt) , str(pkt.get_queue_delay())
+        if pkt:
+            print str(pkt) , str(pkt.get_queue_delay())
 
 
 

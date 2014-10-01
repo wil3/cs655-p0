@@ -2,14 +2,8 @@
 import simpy
 import time
 
-class QStore(simpy.Store):
-    
-    def __init__(self, env):
-        super(QStore, self).__init__(env)
-        self._log = []
-
-    def get_log(self):
-        return self._log
+from store_super import QStore
+from packet import Packet
 
 class FIFOStore(QStore):
     
@@ -26,3 +20,41 @@ class FIFOStore(QStore):
     def _do_put(self,event):
         event.item.set_arrive_time(time.time())
         super(QStore, self)._do_put(event)
+
+
+def test_fifostore():
+    """
+    Test the first in first out queue.
+    """
+    env = simpy.Environment()
+    log = [] # keeps track if returned packets
+    
+    def put(env, store, item):
+        print "adding %s" % str(item)
+        yield store.put(item)
+
+    def get(env, store, log):
+        item = yield store.get()
+        print "getting %s" % str(item)
+        log.append(item)
+    
+    thisstore = FIFOStore(env)
+    packet1 = Packet("src1ip", "dstip", 100, None, None)
+    packet2 = Packet("src1ip", "dstip", 100, None, None)
+    packet3 = Packet("src2ip", "dstip", 100, None, None)
+    env.process(put(env, thisstore, packet1))
+    env.process(put(env, thisstore, packet2))
+    env.process(put(env, thisstore, packet3))
+    env.process(get(env, thisstore, log))
+    env.process(get(env, thisstore, log))
+    env.process(get(env, thisstore, log))
+    env.run()
+    print "Store yeilds packets in this order: %s" % (
+       ", ".join([str(pkt) for pkt in log]))
+    [yieldedpacket1, yieldedpacket2, yieldedpacket3] = log
+    assert yieldedpacket1 == packet1
+    assert yieldedpacket2 == packet2
+    assert yieldedpacket3 == packet3
+
+if __name__ == "__main__":
+    test_fifostore()

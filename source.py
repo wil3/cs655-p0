@@ -2,39 +2,11 @@
 #logging.getLogger("scapy.loading").setLevel(logging.CRITICAL)
 #from scapy import *
 import random
-"""
 
-"""
+from packet import Packet
+
 PKT_LEN_SIGMA = 20
 pkt_counter = 0
-
-class Packet:
-    def __init__(self, src, dst, len, seq, dport):
-        self.src = src
-        self.dst = dst
-        self.len = len
-        self.seq = seq
-        self.dport = dport
-        self.arrive_time = 0
-        self.depart_time = 0
-
-    def get_arrive_time(self):
-        return self.arrive_time
-
-    def set_arrive_time(self, time):
-        self.arrive_time = time
-
-    def get_depart_time(self):
-        return self.depart_time
-
-    def set_depart_time(self, time):
-        self.depart_time = time
-    
-    def get_queue_delay(self):
-        return self.depart_time - self.arrive_time
-
-    def __str__(self):
-        return self.src + ":" + str(self.dport) + " " + str(self.len)
 
 class TrafficSource:
 
