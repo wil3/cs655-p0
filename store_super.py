@@ -28,6 +28,14 @@ class QStore(simpy.Store):
         return pkts
 
 
+    def _print_q_out(self):
+        border = "<<----------"
+        return self.print_q(border)
+
+    def _print_q_in(self):
+        border = "----------<<"
+        return self.print_q(border)
+
 
 
 

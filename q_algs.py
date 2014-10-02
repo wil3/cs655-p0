@@ -7,7 +7,6 @@ from source import *
 #from scapy import *
 #This specifices how many packets we can receive at a time
 BASE_IP = "192.168.1"
-RECQ_SIZE = 5
 FTP_PORT = 20
 FTP_LENGTH = 8192 #bits
 TELENET_PORT = 23
@@ -21,11 +20,14 @@ class Router:
 
     def tx(self):
         while True:
-            print str(self.store)
+#            print str(self.env.now)
+#            print  str(self.store)
             #print 'Any packets at t=', env.now, '?'
             pkt = yield self.store.get() #Store is FIFO, when this is called the packet is consumed because the store is a generator
+#            print str(self.env.now)
+#            print str(self.store)
             #pkt = IP(data)
-            print '\t<<\t', str(pkt.src)
+            print '<<', pkt.src + "(" + str(pkt.len) + ")"
             yield self.env.timeout(pkt.len) #this is the tx time l/bps
             #print self.env.now, '\t\t', str(pkt) , ">>"
 

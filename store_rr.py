@@ -60,6 +60,7 @@ class RRStore(QStore):
             val = event.item
             self.__add_to_queue(key, val)
             event.succeed()
+            print self._print_q_in()
     
     def _do_get(self, event):
         """Gets the next packet"""
@@ -69,6 +70,11 @@ class RRStore(QStore):
             packet.set_depart_time(time.time())
             self._log.append(packet)
             event.succeed(packet)
+            print self._print_q_out()
+
+
+    def print_q(self, border):
+        return border + "\n" + self.__str__() + "\n" + border + "\n"
 
 
     def __str__(self):
@@ -76,8 +82,8 @@ class RRStore(QStore):
         if self.__queues:
             for q in self.__queues:
                 dmp.append(q[0] + "\t" + self._get_queue_str(self.__queues[q]))
-        bnd = "-------------\n"
-        return bnd + "\n".join(dmp) + "\n" + bnd
+        bnd = ""
+        return "\n".join(dmp) 
 
 
 def test_rrstore():

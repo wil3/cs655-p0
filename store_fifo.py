@@ -16,11 +16,19 @@ class FIFOStore(QStore):
             pkt.set_depart_time(time.time())
             self._log.append(pkt)
             event.succeed(pkt)
+            print self._print_q_out()
 
     def _do_put(self,event):
         event.item.set_arrive_time(time.time())
         super(QStore, self)._do_put(event)
+        print self._print_q_in()
 
+    def print_q(self, border):
+        return border + "\n" + self._get_queue_str(self.items) + "\n" + border + "\n"
+
+    def __str__(self):
+        bottom = "-------------\n"
+        return bottom + self._get_queue_str(self.items) + "\n" + bottom
 
 def test_fifostore():
     """

@@ -34,13 +34,14 @@ class TrafficSource:
             else:
                 l = len
             pkt = self.build_pkt(l,seq)
-#            print "#", pkt_counter , " " , str(pkt)
             pkt_counter = pkt_counter + 1
             tx_delay = pkt.len/rate
 
+            print pkt.src + "(" + str(pkt.len) + ")" + ">"
             yield self.env.timeout(tx_delay) #This symbolizes the transmission delay
             yield self.store.put(pkt) #And the packet added to the queue
             seq = seq + 1
+#            print "[" + str(self.env.now) 
             
     def build_pkt(self,l, seq):
         p = Packet(self.src, self.dst, l, seq, self.dport)
