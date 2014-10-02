@@ -3,6 +3,7 @@ import argparse
 import simpy
 from store_fifo import FIFOStore
 from store_rr import RRStore
+from store_drr import DRRStore
 from source import *
 #from scapy import *
 #This specifices how many packets we can receive at a time
@@ -58,7 +59,7 @@ if __name__ == "__main__":
     elif args.rr:
         store = RRStore(env)
     elif args.drr: #drr
-        pass
+        store = DRRStore(env)
     else:
         assert False, "not given a router type argument"
 
