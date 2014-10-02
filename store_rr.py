@@ -13,30 +13,36 @@ class RRStore(QStore):
         This queue is actually composed of a `queue of queues'.
         """
         super(RRStore, self).__init__(env)
-        self.__queues = {}
-        self.__queue_tracker = []
+        self._queues = {}
+        self._queue_tracker = []
 
-    def __get_next_queue(self):
-        """Returns the next key (sourceip, destinationip) and the associated
+    def _get_next_queue(self):
+        """returns the next key (sourceip, destinationip) and the associated
         queue  in the round robin"""
         (key, queue) = (None, None)
-        if len(self.__queue_tracker) > 0:
-            key = self.__queue_tracker.pop(0)
-            self.__queue_tracker.append(key)
-            queue = self.__queues[key]
+        if len(self._queue_tracker) > 0:
+            key = self._queue_tracker.pop(0)
+            self._queue_tracker.append(key)
+            queue = self._queues[key]
         return (key, queue)
-            
-        
 
-    def __add_to_queue(self, key, val):
+    def _add_new_queue(self, key):
+        """adds a queue for a new (sourceip, destinationip) key ASSUMING it is
+        not already stored.
+        Note that the assumption is not checked: this method should be sued with
+        care.
+        """
+        self._queues[key] = []
+        self._queue_tracker.append(key)
+
+    def _add_to_queue(self, key, val):
         """adds the given packet to the queue corresponding to the given key,
         which should be a (sourceip, destinationip) pair"""
-        if not (key in self.__queues):
-            self.__queues[key] = []
-            self.__queue_tracker.append(key)
-        self.__queues[key].append(val)
+        if not (key in self._queues):
+            self._add_new_queue(key)
+        self._queues[key].append(val)
 
-    def __get_packet(self):
+    def _get_packet(self):
         """returns the next packet, at the same time updating the order in
         which the queues are to be checked"""
         checked_keys = [] # keeps track of the queues checked during this
@@ -45,45 +51,43 @@ class RRStore(QStore):
         key = None
         while ((not packet) and
                (not (key in checked_keys)) and
-               len(checked_keys) < len(self.__queue_tracker)):
-            (key, queue) = self.__get_next_queue()
+               len(checked_keys) < len(self._queue_tracker)):
+            (key, queue) = self._get_next_queue()
             checked_keys.append(key)
-            if len(self.__queues[key]) > 0:
-                packet = self.__queues[key].pop(0)
+            if len(self._queues[key]) > 0:
+                packet = self._queues[key].pop(0)
         return packet
 
     def _do_put(self, event):
         """Adds a packet"""
         super(RRStore, self)._do_put(event)
-        if sum([len(queue) for queue in self.__queues.values()]) < self._capacity:
+        if sum([len(queue) for queue in self._queues.values()]) < self._capacity:
             key = (event.item.src, event.item.dst)
             val = event.item
-            self.__add_to_queue(key, val)
+            self._add_to_queue(key, val)
             event.succeed()
-            print self._print_q_in()
     
     def _do_get(self, event):
         """Gets the next packet"""
         item = None
-        packet = self.__get_packet()
+        packet = self._get_packet()
         if packet:
             packet.set_depart_time(time.time())
             self._log.append(packet)
             event.succeed(packet)
-            print self._print_q_out()
-
-
-    def print_q(self, border):
-        return border + "\n" + self.__str__() + "\n" + border + "\n"
-
 
     def __str__(self):
-        dmp = [] 
-        if self.__queues:
-            for q in self.__queues:
-                dmp.append(q[0] + "\t" + self._get_queue_str(self.__queues[q]))
-        bnd = ""
-        return "\n".join(dmp) 
+        def get_queue_str(queue):
+            """Returns a string representation of the queue contents"""
+            return "|".join([str(pkt.len) for pkt in queue])
+
+        dmp = []
+        if self._queues:
+            for q in self._queues:
+                dmp.append(q[0] + "\t" + get_queue_str(self._queues[q]))
+
+        bnd = "-------------\n"
+        return bnd + "\n".join(dmp) + "\n" + bnd
 
 
 def test_rrstore():
