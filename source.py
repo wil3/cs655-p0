@@ -5,7 +5,6 @@ import random
 
 from packet import Packet
 
-PKT_LEN_SIGMA = 20
 pkt_counter = 0
 
 class TrafficSource:
@@ -16,7 +15,6 @@ class TrafficSource:
         self.dport = dport
         self.src = src
         self.dst = dst 
-        
 
     def tx(self, rate, len, var=False):
         """

@@ -13,10 +13,11 @@ class Packet:
         self.src = src
         self.dst = dst
         self.len = length
-        self._seq = seq
+        self.seq = seq
         self._dport = dport
-        self._arrive_time = None
-        self._depart_time = None
+        self._arrive_time = 0
+        self._depart_time = 0
+        self.tx_time = 0 #Time at which packet is fully tx
 
     def set_arrive_time(self, arrive_time):
         """Sets the time at which the packet arrives in the queue."""
@@ -47,5 +48,10 @@ class Packet:
         """
         Gives a text representation of the packet.
         """
-        return "packet from %s to %s of size %s" % (
-            str(self.src), str(self.dst), str(self.len))
+        return "%d\t%s(%d)\tq=%f\ttx=%f" % (self.seq, self.src, self.len, self.get_queue_delay(), self.tx_time)
+
+
+
+
+
+

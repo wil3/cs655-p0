@@ -1,10 +1,13 @@
 import logging
 import argparse
 import simpy
+import time
 from store_fifo import FIFOStore
 from store_rr import RRStore
 from store_drr import DRRStore
 from source import *
+from analysis import *
+
 #from scapy import *
 #This specifices how many packets we can receive at a time
 BASE_IP = "192.168.1"
@@ -30,8 +33,8 @@ class Router:
             #pkt = IP(data)
             print '<<', pkt.src + "(" + str(pkt.len) + ")"
             yield self.env.timeout(pkt.len) #this is the tx time l/bps
-            #print self.env.now, '\t\t', str(pkt) , ">>"
-
+            
+            self.store._log[pkt.src][pkt.seq].tx_time = time.time()
 
 
 
@@ -76,10 +79,6 @@ if __name__ == "__main__":
     env.run()
 
     
-    #After the experiment as run this is the data that has been logged
-    for pkt in store.get_log():
-        if pkt:
-            print str(pkt) , str(pkt.get_queue_delay())
-
-
+    an = QAnalysis(store.get_log())
+    an.print_data()
 

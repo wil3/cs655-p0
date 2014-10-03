@@ -14,7 +14,7 @@ class FIFOStore(QStore):
         if self.items:
             pkt = self.items.pop(0)
             pkt.set_depart_time(time.time())
-            self._log.append(pkt)
+            self._record(pkt)
             event.succeed(pkt)
             print self._print_q_out()
 
