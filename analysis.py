@@ -79,17 +79,24 @@ class QAnalysis:
             throughputs.append(self.compute_throughput(pkts))
         return throughputs
 
+    def get_source_mean_latency(self,pkts):
+        """
+        Compute the average latency for source
+        """
+        accum=0
+        for seq in pkts:
+            pkt = pkts[seq]
+            accum = accum + pkt.get_queue_delay()
+
+        return accum / len(pkts)
+
     def get_source_latencies(self):
         
         delays= []
         #src is the ip address
         for src in self._data:
             pkts = self._data[src]
-            delay = []
-            for seq in pkts:
-                pkt = pkts[seq]
-                delay.append(pkt.get_queue_delay())
-            delays.append(delay)
+            delays.append(self.get_source_mean_latency(pkts))
         return delays
 
     def plot_rate(self):

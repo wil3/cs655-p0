@@ -16,6 +16,8 @@ FTP_LENGTH = 8192 #bits
 TELENET_PORT = 23
 TELENET_LENGTH = 512 #bits
 ROUTER_IP = "192.168.1.1"
+PKT_CREATE_MAX = 10
+PKT_COUNTER = 0
 
 class Router:
     def __init__(self, env, store):
@@ -31,7 +33,7 @@ class Router:
 #            print str(self.env.now)
 #            print str(self.store)
             #pkt = IP(data)
-            print '<<', pkt.src + "(" + str(pkt.len) + ")"
+            print '<<', str(pkt.src) + "(" + str(pkt.len) + ")"
             yield self.env.timeout(pkt.len) #this is the tx time l/bps
             
             #TODO Is this going to work for all algs?
@@ -42,20 +44,19 @@ class Router:
 
 def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate):
     for i in range(count):
-        ip = BASE_IP + "." + str(start_ip + i)
+#        ip = BASE_IP + "." + str(start_ip + i)
+        ip = start_ip + i
         s = TrafficSource(env, store, dport, ip, ROUTER_IP)
         print "Creating ", str(s)
         env.process(s.tx(rate, mu_len, variate))
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description='Test various queuing algorithms')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--fifo', action='store_true')
-    group.add_argument('--rr', action='store_true')
-    group.add_argument('--drr', action='store_true')
-    args = parser.parse_args()
-
+def run(args):
+    """
+    Return tuple of latencies and throughputs
+    """
+    global PKT_COUNTER
+    PKT_COUNTER = 0
+    print "Starting experiment", PKT_COUNTER
     env = simpy.Environment()
     store = None
     if args.fifo:
@@ -67,10 +68,10 @@ if __name__ == "__main__":
     else:
         assert False, "not given a router type argument"
 
-#create ftp sources
-    create_sources(env, store, 2, 100, FTP_PORT, .1, FTP_LENGTH, True)
-#create telnet sources
-    create_sources(env, store, 2, 107, TELENET_PORT, 1, TELENET_LENGTH, True)
+    #create ftp sources
+    create_sources(env, store, 2, 0, FTP_PORT, .1, FTP_LENGTH, True)
+    #create telnet sources
+    create_sources(env, store, 2, 2, TELENET_PORT, 1, TELENET_LENGTH, True)
     #Create rouge
     #create_sources(env, store, 1, 112, 6666, 0.5, 5000, False)
 
@@ -78,9 +79,48 @@ if __name__ == "__main__":
     env.process(router.tx())
 
     env.run()
-
     
     an = QAnalysis(store.get_log())
     an.print_data()
-    an.plot_rate()
-    an.plot_latency()
+    #The order of the data matches the source list so it needs to be returned
+    #as well
+    return (an.get_source_list(), an.get_source_latencies(), an.get_source_throughputs())
+    
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Test various queuing algorithms')
+    parser.add_argument('-M', metavar='M', required=True, type=int, help='load')
+    parser.add_argument('-x', metavar='x', type=int, help='Number of experiements to run')
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--fifo', action='store_true')
+    group.add_argument('--rr', action='store_true')
+    group.add_argument('--drr', action='store_true')
+
+    args = parser.parse_args()
+    
+    l = [None]*4
+    t = [None]*4
+
+    for i in range(args.x):
+        (srcs, delay, tput) = run(args)
+        print srcs
+        print delay
+        print tput
+        
+        for s in srcs:
+            if l[s] == None:
+                l[s] = [delay[s]]
+                t[s] = [tput[s]]
+            else:
+                l[s].append(delay[s])
+                t[s].append(tput[s])
+
+    print l
+    print t
+
+
+#    an.print_data()
+#    an.plot_rate()
+#    AN.PLOt_latency()
+    
