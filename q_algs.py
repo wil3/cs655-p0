@@ -34,8 +34,9 @@ class Router:
             print '<<', pkt.src + "(" + str(pkt.len) + ")"
             yield self.env.timeout(pkt.len) #this is the tx time l/bps
             
-            self.store._log[pkt.src][pkt.seq].tx_time = time.time()
-
+            #TODO Is this going to work for all algs?
+            #self.store._log[pkt.src][pkt.seq].tx_time = time.time()
+            pkt.tx_time = time.time()
 
 
 
