@@ -82,4 +82,5 @@ if __name__ == "__main__":
     
     an = QAnalysis(store.get_log())
     an.print_data()
-
+    an.plot_rate()
+    an.plot_latency()
