@@ -42,11 +42,11 @@ class Router:
 
 
 
-def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate):
+def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate, pool):
     for i in range(count):
 #        ip = BASE_IP + "." + str(start_ip + i)
         ip = start_ip + i
-        s = TrafficSource(env, store, dport, ip, ROUTER_IP)
+        s = TrafficSource(env, store, dport, ip, ROUTER_IP, pool)
         print "Creating ", str(s)
         env.process(s.tx(rate, mu_len, variate))
 
@@ -54,10 +54,8 @@ def run(args):
     """
     Return tuple of latencies and throughputs
     """
-    global PKT_COUNTER
-    PKT_COUNTER = 0
-    print "Starting experiment", PKT_COUNTER
     env = simpy.Environment()
+    pkt_pool = simpy.Container(env, init=PKT_CREATE_MAX, capacity=PKT_CREATE_MAX)
     store = None
     if args.fifo:
         store = FIFOStore(env) #simpy.Store(env, capacity=RECQ_SIZE)
@@ -69,9 +67,9 @@ def run(args):
         assert False, "not given a router type argument"
 
     #create ftp sources
-    create_sources(env, store, 2, 0, FTP_PORT, .1, FTP_LENGTH, True)
+    create_sources(env, store, 2, 0, FTP_PORT, .1, FTP_LENGTH, True, pkt_pool)
     #create telnet sources
-    create_sources(env, store, 2, 2, TELENET_PORT, 1, TELENET_LENGTH, True)
+    create_sources(env, store, 2, 2, TELENET_PORT, 1, TELENET_LENGTH, True, pkt_pool)
     #Create rouge
     #create_sources(env, store, 1, 112, 6666, 0.5, 5000, False)
 

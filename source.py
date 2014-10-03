@@ -7,12 +7,15 @@ from packet import Packet
 
 class TrafficSource:
 
-    def __init__(self,env,store,dport,src,dst):
+    def __init__(self,env,store,dport,src,dst,pkt_pool):
         self.env = env
         self.store = store
         self.dport = dport
         self.src = src
         self.dst = dst 
+        #where all the packets are coming from, there
+        #are only a limited amount
+        self._pkt_pool = pkt_pool
 
     def tx(self, rate, len, var=False):
         """
@@ -24,9 +27,11 @@ class TrafficSource:
         #Use a global variable to keep track of the 
         #total number of packets created so we can stop at the limit
 
-        print q_algs.PKT_COUNTER
-        while q_algs.PKT_COUNTER < q_algs.PKT_CREATE_MAX:
-            print q_algs.PKT_COUNTER
+        while True:
+        #    print "Pool level", self._pkt_pool.level
+            if self._pkt_pool.level <= 0:
+                break
+
             if var:
                 #this distri can return 0 so make sure its at least 1 bit
                 l = int(random.expovariate(1.0/len)) + 1
@@ -40,6 +45,7 @@ class TrafficSource:
             yield self.env.timeout(tx_delay) #This symbolizes the transmission delay
             yield self.store.put(pkt) #And the packet added to the queue
             seq = seq + 1
+            yield self._pkt_pool.get(1)
 #            print "[" + str(self.env.now) 
             
     def build_pkt(self,l, seq):
