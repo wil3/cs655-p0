@@ -1,0 +1,62 @@
+%
+\documentclass[11pt]{article}
+
+\newcommand{\name}{Wil Kock, Sophia Yakoubov }
+\newcommand{\hw}{0}
+
+%\pagestyle{headings}
+\usepackage[dvips]{graphics,color}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{todonotes}
+\setlength{\parskip}{1pc}
+\setlength{\parindent}{0pt}
+\setlength{\topmargin}{-3pc}
+\setlength{\textheight}{9.5in}
+\setlength{\oddsidemargin}{0pc}
+\setlength{\evensidemargin}{0pc}
+\setlength{\textwidth}{6.5in}
+
+\newcommand{\head}{
+\newpage
+\noindent
+\framebox{
+	\vbox{
+		CS655 (Networks) Programming Assignment \hw  \\ 
+		\name \hfill \today
+	}
+}
+\bigskip
+
+}
+
+
+\begin{document}
+
+\head
+
+\section{Program Documentation}
+
+We implemented this assignment in Python, building off of the Sympy library.
+
+\subsection{Routers}
+
+We took a class-based approach to implementing our routers. 
+We created a router superclass (in `store\_super.py'), FIFO and RR router classes subclassing it (in `store\_fifo.py' and `store\_rr.py' respectively), and a DRR router class subclassing the RR router class (in `store\_drr.py').
+
+\subsection{Sources}
+
+\subsection{Running Instructions}
+
+\section{Experimental Results}
+
+\subsection{FIFO Router}
+
+\subsection{RR Router}
+
+\subsection{DRR Router}
+
+\end{document}
+
