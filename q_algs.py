@@ -159,8 +159,8 @@ if __name__ == "__main__":
     sources = get_real_source_list()
     print sources
     an = QAnalysis()
-    an.plot("Source Throughput","Throughput (bps)", "Sources", sources, t)
-    an.plot("Source Latencies","Latency", "Sources", sources, l)
+    an.plot("Source Throughput","Throughput (bps)", sources, t)
+    an.plot("Source Latencies","Latency", sources, l)
 #    an.print_data()
 #    an.plot_rate()
 #    AN.PLOt_latency()

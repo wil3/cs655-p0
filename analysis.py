@@ -1,8 +1,9 @@
 
 import time
 import numpy as np
+import scipy.stats as stats
 import matplotlib.pyplot as plt
-
+import math
 
 class QMetrics:
     
@@ -118,29 +119,46 @@ class QAnalysis:
     def __init__(self):
         pass
 
-    def plot(self, label, ylabel, xlabel, xticks, data):
+    def plot(self, label, ylabel, xticks, data):
         """
         label: the plot label
         ylabel: the y-axis label
         xticks: the labels for each tickmark of the x-axis
         data: a list of items of the form (label, avgresults)
         """
-
+        xlabel = "Sources"
 #TODO Figure out how we deal with running exp multiple times
         #data = []
         #for src in sample:
         #    data.append([src])
-            
+
+        # setting up the plot:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.title(label)
-      #  for (linelabel, avgresults) in data:
-#TODO Still need to calculate these values
-      # usermedians can be overriden...will be line use mean instead
-      # conf_intervals
-        plt.boxplot(data)
-        plt.xticks(range(1, len(xticks)+1), xticks)
-#        legendstrings.append(linelabel)
-#    if len(data) > 1:
-#        Plt.legend(legendstrings)
+        xtickslocs = range(1, len(xticks)+1)
+        plt.xticks(xtickslocs, xticks)
+        # create the box plot:
+        this_plot = plt.boxplot(data)
+                                #notch=True,
+                                #usermedians=means)
+                                #conf_intervals=conf_intervals)
+        means = [np.mean(dataset) for dataset in data]
+        conf_intervals = [stats.bayes_mvs(dataset, alpha=.9)[0][1]
+                          for dataset in data]
+        conf_interval_lower = [ci[0] for ci in conf_intervals]
+        conf_interval_upper = [ci[1] for ci in conf_intervals]
+        # mark the means separately, since it does not make sense to use means
+        # instead of medians in a box plot:
+        plt.scatter(xtickslocs, means)
+        # because we are not using the median, we mark our confidence intervals
+        # separately also:
+        plt.scatter(xtickslocs, conf_interval_lower, c='red')
+        plt.scatter(xtickslocs, conf_interval_upper, c='red')
+        # making sure the plot is correct:
+##        displayed_means = [float(data_point.get_ydata()[0]) for data_point in
+##                           this_plot["medians"]]
+##        for (desired_mean, displayed_mean) in zip(means, displayed_means):
+##            assert desired_mean == displayed_mean
+        # displaying the plot:
         plt.show()
