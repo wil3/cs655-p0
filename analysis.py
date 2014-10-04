@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class QAnalysis:
+class QMetrics:
     
     def __init__(self, data):
         self._data = data
@@ -112,25 +112,35 @@ class QAnalysis:
         plot("Source Latencies","Latency", "Sources", sources, latency)
 
 
-def plot(label, ylabel, xlabel, xticks, sample):
-    """
-    label: the plot label
-    ylabel: the y-axis label
-    xticks: the labels for each tickmark of the x-axis
-    data: a list of items of the form (label, avgresults)
-    """
+
+class QAnalysis:
+
+    def __init__(self):
+        pass
+
+    def plot(self, label, ylabel, xlabel, xticks, data):
+        """
+        label: the plot label
+        ylabel: the y-axis label
+        xticks: the labels for each tickmark of the x-axis
+        data: a list of items of the form (label, avgresults)
+        """
 
 #TODO Figure out how we deal with running exp multiple times
-    data = []
-    for src in sample:
-        data.append([src])
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(label)
-  #  for (linelabel, avgresults) in data:
-    plt.boxplot(data)
-    plt.xticks(range(1, len(xticks)+1), xticks)
+        #data = []
+        #for src in sample:
+        #    data.append([src])
+            
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(label)
+      #  for (linelabel, avgresults) in data:
+#TODO Still need to calculate these values
+      # usermedians can be overriden...will be line use mean instead
+      # conf_intervals
+        plt.boxplot(data)
+        plt.xticks(range(1, len(xticks)+1), xticks)
 #        legendstrings.append(linelabel)
 #    if len(data) > 1:
 #        Plt.legend(legendstrings)
-    plt.show()
+        plt.show()

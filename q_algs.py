@@ -10,14 +10,21 @@ from analysis import *
 
 #from scapy import *
 #This specifices how many packets we can receive at a time
-BASE_IP = "192.168.1"
+START_IP = 100
+BASE_IP = "192.168.1."
 FTP_PORT = 20
 FTP_LENGTH = 8192 #bits
+FTP_SOURCES = 2
 TELENET_PORT = 23
 TELENET_LENGTH = 512 #bits
+TELENET_SOURCES = 2
+ROUGE_SOURCES = 0 
 ROUTER_IP = "192.168.1.1"
 PKT_CREATE_MAX = 10
 PKT_COUNTER = 0
+
+
+
 
 class Router:
     def __init__(self, env, store):
@@ -42,6 +49,32 @@ class Router:
 
 
 
+
+
+def get_total_number_sources():
+    return [FTP_SOURCES,TELENET_SOURCES,ROUGE_SOURCES]
+
+def convert_to_real_name(index, port):
+    return BASE_IP + str(START_IP + index) + "(" + str(port) + ")"
+
+def get_real_source_list():
+    sources = []
+    last_ip =0
+    k=0
+    for i in get_total_number_sources():
+        dport = '?'
+        if k == 0:
+            dport = str(FTP_PORT)
+        elif k == 1:
+            dport = str(TELENET_PORT)
+
+        for j in range(i):
+            sources.append(BASE_IP + str(START_IP + last_ip) + "(" + dport + ")") 
+            last_ip = last_ip + 1
+        k = k + 1
+
+    return sources
+
 def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate, pool):
     for i in range(count):
 #        ip = BASE_IP + "." + str(start_ip + i)
@@ -64,12 +97,12 @@ def run(args):
     elif args.drr: #drr
         store = DRRStore(env)
     else:
-        assert False, "not given a router type argument"
-
+        assert False, "not given a queue algorithm  type argument"
+#TODO mofidy these values
     #create ftp sources
-    create_sources(env, store, 2, 0, FTP_PORT, .1, FTP_LENGTH, True, pkt_pool)
+    create_sources(env, store, FTP_SOURCES, 0, FTP_PORT, .1, FTP_LENGTH, True, pkt_pool)
     #create telnet sources
-    create_sources(env, store, 2, 2, TELENET_PORT, 1, TELENET_LENGTH, True, pkt_pool)
+    create_sources(env, store, TELENET_SOURCES, FTP_SOURCES, TELENET_PORT, 1, TELENET_LENGTH, True, pkt_pool)
     #Create rouge
     #create_sources(env, store, 1, 112, 6666, 0.5, 5000, False)
 
@@ -78,12 +111,20 @@ def run(args):
 
     env.run()
     
-    an = QAnalysis(store.get_log())
+    an = QMetrics(store.get_log())
     an.print_data()
     #The order of the data matches the source list so it needs to be returned
     #as well
     return (an.get_source_list(), an.get_source_latencies(), an.get_source_throughputs())
-    
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Test various queuing algorithms')
@@ -96,12 +137,12 @@ if __name__ == "__main__":
     group.add_argument('--drr', action='store_true')
 
     args = parser.parse_args()
-    
-    l = [None]*4
-    t = [None]*4
 
+    l = [None]*sum(get_total_number_sources())
+    t = [None]*sum(get_total_number_sources())
     for i in range(args.x):
         (srcs, delay, tput) = run(args)
+        sources = srcs
         print srcs
         print delay
         print tput
@@ -113,11 +154,13 @@ if __name__ == "__main__":
             else:
                 l[s].append(delay[s])
                 t[s].append(tput[s])
-
     print l
     print t
-
-
+    sources = get_real_source_list()
+    print sources
+    an = QAnalysis()
+    an.plot("Source Throughput","Throughput (bps)", "Sources", sources, t)
+    an.plot("Source Latencies","Latency", "Sources", sources, l)
 #    an.print_data()
 #    an.plot_rate()
 #    AN.PLOt_latency()
