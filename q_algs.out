@@ -1,0 +1,7 @@
+Running experiment...
+Summary of results: 
+Running experiment...
+Summary of results: 
+All latencies [None, None, None, None, None, None, None, None, None, None, None]
+All throughputs [None, None, None, None, None, None, None, None, None, None, None]
+Sources ['192.168.1.100(20)', '192.168.1.101(20)', '192.168.1.102(20)', '192.168.1.103(20)', '192.168.1.104(20)', '192.168.1.105(20)', '192.168.1.106(23)', '192.168.1.107(23)', '192.168.1.108(23)', '192.168.1.109(23)', '192.168.1.110(?)']

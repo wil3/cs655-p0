@@ -66,21 +66,34 @@ class RRStore(QStore):
             val = event.item
             self._add_to_queue(key, val)
             event.succeed()
+            self.logger.debug(self._print_q_in())
     
+
+
     def _do_get(self, event):
         """Gets the next packet"""
         item = None
         packet = self._get_packet()
         if packet:
             packet.set_depart_time(time.time())
-            self._log.append(packet)
+            self._record(packet)
             event.succeed(packet)
+            self.logger.debug(self._print_q_out())
+
+
+    def print_q(self, border):
+        dmp = []
+        if self._queues:
+            for q in self._queues:
+                dmp.append(str(q[0]) + "\t" + self.get_queue_str(self._queues[q]))
+
+        return border + "\n".join(dmp) + "\n" + border
+
+    def get_queue_str(self,queue):
+        """Returns a string representation of the queue contents"""
+        return "|".join([str(pkt.len) for pkt in queue])
 
     def __str__(self):
-        def get_queue_str(queue):
-            """Returns a string representation of the queue contents"""
-            return "|".join([str(pkt.len) for pkt in queue])
-
         dmp = []
         if self._queues:
             for q in self._queues:

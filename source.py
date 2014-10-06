@@ -1,6 +1,4 @@
-#import logging
-#logging.getLogger("scapy.loading").setLevel(logging.CRITICAL)
-#from scapy import *
+import logging
 import random
 import q_algs
 from packet import Packet
@@ -16,7 +14,7 @@ class TrafficSource:
         #where all the packets are coming from, there
         #are only a limited amount
         self._pkt_pool = pkt_pool
-
+        self.logger = logging.getLogger('q')
     def tx(self, rate, len, var=False):
         """
         Transmit  packet, if var is true then 
@@ -41,7 +39,7 @@ class TrafficSource:
             q_algs.PKT_COUNTER = q_algs.PKT_COUNTER + 1
             tx_delay = pkt.len/rate
 
-            print str(pkt.src) + "(" + str(pkt.len) + ")" + ">"
+            self.logger.debug(str(pkt.src) + "(" + str(pkt.len) + ")" + ">")
             yield self.env.timeout(tx_delay) #This symbolizes the transmission delay
             yield self.store.put(pkt) #And the packet added to the queue
             seq = seq + 1

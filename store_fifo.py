@@ -1,4 +1,4 @@
-
+import logging
 import simpy
 import time
 
@@ -9,19 +9,19 @@ class FIFOStore(QStore):
     
     def __init__(self, env):
         super(FIFOStore, self).__init__(env)
-    
+            
     def _do_get(self, event):
         if self.items:
             pkt = self.items.pop(0)
             pkt.set_depart_time(time.time())
             self._record(pkt)
             event.succeed(pkt)
-            print self._print_q_out()
+            self.logger.debug(self._print_q_out())
 
     def _do_put(self,event):
         event.item.set_arrive_time(time.time())
         super(QStore, self)._do_put(event)
-        print self._print_q_in()
+        self.logger.debug(self._print_q_in())
 
     def print_q(self, border):
         return border + "\n" + self._get_queue_str(self.items) + "\n" + border + "\n"

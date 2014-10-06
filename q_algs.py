@@ -1,4 +1,10 @@
+
+
 import logging
+
+logging.basicConfig(format='%(message)s', filemode='w', filename='q.out', level=logging.DEBUG)
+logger = logging.getLogger('q')
+
 import argparse
 import simpy
 import time
@@ -7,7 +13,6 @@ from store_rr import RRStore
 from store_drr import DRRStore
 from source import *
 from analysis import *
-
 #from scapy import *
 #This specifices how many packets we can receive at a time
 START_IP = 100
@@ -30,7 +35,7 @@ class Router:
     def __init__(self, env, store):
         self.env = env
         self.store = store
-
+        self.logger = logging.getLogger('q')
     def tx(self):
         while True:
 #            print str(self.env.now)
@@ -40,7 +45,7 @@ class Router:
 #            print str(self.env.now)
 #            print str(self.store)
             #pkt = IP(data)
-            print '<<', str(pkt.src) + "(" + str(pkt.len) + ")"
+            self.logger.debug('<<' + str(pkt.src) + "(" + str(pkt.len) + ")")
             yield self.env.timeout(pkt.len) #this is the tx time l/bps
             
             #TODO Is this going to work for all algs?
@@ -80,7 +85,7 @@ def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate, po
 #        ip = BASE_IP + "." + str(start_ip + i)
         ip = start_ip + i
         s = TrafficSource(env, store, dport, ip, ROUTER_IP, pool)
-        print "Creating ", str(s)
+        #print "Creating ", str(s)
         env.process(s.tx(rate, mu_len, variate))
 
 def run(args):
@@ -88,13 +93,16 @@ def run(args):
     Return tuple of latencies and throughputs
     """
     env = simpy.Environment()
-    pkt_pool = simpy.Container(env, init=PKT_CREATE_MAX, capacity=PKT_CREATE_MAX)
+    pkt_pool = simpy.Container(env, init=args.n, capacity=args.n)
     store = None
     if args.fifo:
+        logger.debug("Using FIFO Algorithm")
         store = FIFOStore(env) #simpy.Store(env, capacity=RECQ_SIZE)
     elif args.rr:
+        logger.debug("Using RR Algorithm")
         store = RRStore(env)
     elif args.drr: #drr
+        logger.debug("Using DRR Algorithm")
         store = DRRStore(env)
     else:
         assert False, "not given a queue algorithm  type argument"
@@ -114,6 +122,7 @@ def run(args):
     env.run()
     
     an = QMetrics(store.get_log())
+    print "Summary of results: "
     an.print_data()
     #The order of the data matches the source list so it needs to be returned
     #as well
@@ -130,9 +139,17 @@ def run(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Test various queuing algorithms')
-    parser.add_argument('-M', metavar='M', required=True, type=int, help='load')
+    parser.add_argument('-M', metavar='M', required=True, type=float, help='load')
     parser.add_argument('-x', metavar='x', type=int, help='Number of experiements to run')
+    parser.add_argument('-n', metavar='num_packets', type=int, help='Number of packets to use in experiements', required=True)
+    parser.add_argument('-p', action='store_true', help='Whether to display the plots')
 
+
+   # fh = logging.FileHandler('q.out')
+   # fh.setLevel(logging.DEBUG)
+   # logger.addHandler(fh)
+   # logger.setLevel(logging.ERROR)
+   
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--fifo', action='store_true')
     group.add_argument('--rr', action='store_true')
@@ -143,11 +160,12 @@ if __name__ == "__main__":
     l = [None]*sum(get_total_number_sources())
     t = [None]*sum(get_total_number_sources())
     for i in range(args.x):
+        print "Running experiment..."
         (srcs, delay, tput) = run(args)
         sources = srcs
-        print srcs
-        print delay
-        print tput
+#        print srcs
+#        print delay
+#        print tput
         
         for s in srcs:
             if l[s] == None:
@@ -159,10 +177,11 @@ if __name__ == "__main__":
     print "All latencies", l
     print "All throughputs", t
     sources = get_real_source_list()
-    print sources
-    an = QAnalysis()
-    an.plot("Source Throughput","Throughput (bps)", sources, t)
-    an.plot("Source Latencies","Latency", sources, l)
+    print "Sources", sources
+    if args.p:
+        an = QAnalysis()
+        an.plot("Source Throughput","Throughput (bps)", sources, t)
+        an.plot("Source Latencies","Latency", sources, l)
 #    an.print_data()
 #    an.plot_rate()
 #    AN.PLOt_latency()
