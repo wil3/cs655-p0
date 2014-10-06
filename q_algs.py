@@ -14,13 +14,13 @@ START_IP = 100
 BASE_IP = "192.168.1."
 FTP_PORT = 20
 FTP_LENGTH = 8192 #bits
-FTP_SOURCES = 2
+FTP_SOURCES = 6
 TELENET_PORT = 23
 TELENET_LENGTH = 512 #bits
-TELENET_SOURCES = 2
-ROUGE_SOURCES = 0 
+TELENET_SOURCES = 4
+ROUGE_SOURCES = 1 
 ROUTER_IP = "192.168.1.1"
-PKT_CREATE_MAX = 10
+PKT_CREATE_MAX = 1000
 PKT_COUNTER = 0
 
 
@@ -99,12 +99,14 @@ def run(args):
     else:
         assert False, "not given a queue algorithm  type argument"
 #TODO mofidy these values
+
+    rate = args.M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
     #create ftp sources
-    create_sources(env, store, FTP_SOURCES, 0, FTP_PORT, .1, FTP_LENGTH, True, pkt_pool)
+    create_sources(env, store, FTP_SOURCES, 0, FTP_PORT, rate, FTP_LENGTH, True, pkt_pool)
     #create telnet sources
-    create_sources(env, store, TELENET_SOURCES, FTP_SOURCES, TELENET_PORT, 1, TELENET_LENGTH, True, pkt_pool)
+    create_sources(env, store, TELENET_SOURCES, FTP_SOURCES, TELENET_PORT, rate, TELENET_LENGTH, True, pkt_pool)
     #Create rouge
-    #create_sources(env, store, 1, 112, 6666, 0.5, 5000, False)
+    create_sources(env, store, ROUGE_SOURCES, TELENET_SOURCES+FTP_SOURCES, 1234, 0.5, 5000, False, pkt_pool)
 
     router = Router(env,store)
     env.process(router.tx())
@@ -154,8 +156,8 @@ if __name__ == "__main__":
             else:
                 l[s].append(delay[s])
                 t[s].append(tput[s])
-    print l
-    print t
+    print "All latencies", l
+    print "All throughputs", t
     sources = get_real_source_list()
     print sources
     an = QAnalysis()
