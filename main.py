@@ -154,24 +154,15 @@ if __name__ == "__main__":
     group.add_argument('--drr', action='store_true')
 
     args = parser.parse_args()
-
-    l = [None]*sum(get_total_number_sources())
-    t = [None]*sum(get_total_number_sources())
+    l = [[] for srcnum in xrange(sum(get_total_number_sources()))]
+    t = [[] for srcnum in xrange(sum(get_total_number_sources()))]
     for i in range(args.x):
         print "Running experiment..."
         (srcs, delay, tput) = run(args)
         sources = srcs
-#        print srcs
-#        print delay
-#        print tput
-        
         for s in srcs:
-            if l[s] == None:
-                l[s] = [delay[s]]
-                t[s] = [tput[s]]
-            else:
-                l[s].append(delay[s])
-                t[s].append(tput[s])
+            l[s].append(delay[s])
+            t[s].append(tput[s])
     print "All latencies", l
     print "All throughputs", t
     sources = get_real_source_list()

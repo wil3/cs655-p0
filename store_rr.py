@@ -7,14 +7,18 @@ from packet import Packet
 class RRStore(QStore):
     """Round Robin queue"""
     
-    def __init__(self, env):
+    def __init__(self, env, buffersize=100000):
         """
         Initializes the Round Robin queue.
         This queue is actually composed of a `queue of queues'.
         """
         super(RRStore, self).__init__(env)
         self._queues = {}
+        self._queue_sizes = {}
         self._queue_tracker = []
+        self._buffersize = buffersize
+        self._bufferoccupancy = 0
+
 
     def _get_next_queue(self):
         """returns the next key (sourceip, destinationip) and the associated
@@ -33,6 +37,7 @@ class RRStore(QStore):
         care.
         """
         self._queues[key] = []
+        self._queue_sizes[key] = 0
         self._queue_tracker.append(key)
 
     def _add_to_queue(self, key, val):
@@ -41,6 +46,18 @@ class RRStore(QStore):
         if not (key in self._queues):
             self._add_new_queue(key)
         self._queues[key].append(val)
+        self._queue_sizes[key] += val.len
+        self._bufferoccupancy += val.len
+        # if the buffer overflows:
+        while self._bufferoccupancy > self._buffersize:
+            inverse = [
+                (tempkey, tempval) for tempval, tempkey
+                in self._queue_sizes.items()]
+            tempkey = max(inverse)[1]
+            #print self._queues
+            dropped_packet = self._queues[tempkey].pop(-1)
+            self._queue_sizes[tempkey] -= dropped_packet.len
+            self._bufferoccupancy -= dropped_packet.len
 
     def _get_packet(self):
         """returns the next packet, at the same time updating the order in
@@ -56,6 +73,9 @@ class RRStore(QStore):
             checked_keys.append(key)
             if len(self._queues[key]) > 0:
                 packet = self._queues[key].pop(0)
+        if packet:
+            self._queue_sizes[key] -= packet.len
+            self._bufferoccupancy -= packet.len
         return packet
 
     def _do_put(self, event):

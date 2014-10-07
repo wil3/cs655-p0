@@ -7,15 +7,16 @@ from packet import Packet
 class DRRStore(RRStore):
     """Deficit Round Robin queue"""
     
-    def __init__(self, env, deficitcounter=100):
+    def __init__(self, env, buffersize=100000, deficitcounter=500):
         """
         Initializes the Deficit Round Robin queue.
         Like the Round Robin queue, this queue is composed of a `queue of
         queues'.
-        deficitcounter: number of bytes that a flow is allows to transmit when it is its
+        deficitcounter: number of bits that a flow is allows to transmit when it is its
         turn
+        buffersize: number of bits that can be held by the queue at a time
         """
-        super(DRRStore, self).__init__(env)
+        super(DRRStore, self).__init__(env, buffersize)
         self.__deficits = {}
         self.__deficitcounter = deficitcounter
 
@@ -26,7 +27,7 @@ class DRRStore(RRStore):
         care.
         """
         super(DRRStore, self)._add_new_queue(key)
-        self.__deficits[key] = 0        
+        self.__deficits[key] = 0
     
     def _get_packet(self):
         """returns the next packet, at the same time updating the order in
@@ -43,6 +44,9 @@ class DRRStore(RRStore):
                     if consideredpacket.len <= self.__deficits[key]:
                         self.__deficits[key] -= consideredpacket.len
                         packet = self._queues[key].pop(0)
+        if packet:
+            self._queue_sizes[key] -= packet.len
+            self._bufferoccupancy -= packet.len
         return packet
 
 def test_drrstore():
@@ -62,9 +66,9 @@ def test_drrstore():
         log.append(item)
     
     thisstore = DRRStore(env)
-    packet1 = Packet("src1ip", "dstip", 1000, None, None)
-    packet2 = Packet("src1ip", "dstip", 100, None, None)
-    packet3 = Packet("src2ip", "dstip", 100, None, None)
+    packet1 = Packet("src1ip", "dstip", 1000, 1, 1)
+    packet2 = Packet("src1ip", "dstip", 100, 1, 1)
+    packet3 = Packet("src2ip", "dstip", 100, 1, 1)
     env.process(put(env, thisstore, packet1))
     env.process(put(env, thisstore, packet2))
     env.process(put(env, thisstore, packet3))

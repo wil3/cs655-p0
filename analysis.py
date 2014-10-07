@@ -31,7 +31,8 @@ class QMetrics:
         get the first one sent, this may not be the same as the first sequence
         """
         earliest = 10000;#something big
-        first_pkt =pkts[0] 
+        seq_first = min(pkts.keys())
+        first_pkt =pkts[seq_first] 
         for seq in pkts:
             pkt = pkts[seq]
             if pkt.get_arrive_time() < earliest:
@@ -52,7 +53,7 @@ class QMetrics:
         #First packet (seq=0) might actually be large and not be the first 
         #packet to arrive
         a=self.get_first_arrived_packet(pkts).get_arrive_time()
-        seq_last=len(pkts)-1
+        seq_last=max(pkts.keys())
         f=pkts[seq_last].tx_time
 
         return b/(f-a)
@@ -72,11 +73,11 @@ class QMetrics:
 
         return array in same order as source array
         """
-        throughputs= []
+        throughputs= {}
         #src is the ip address
         for src in self._data:
             pkts = self._data[src]
-            throughputs.append(self.compute_throughput(pkts))
+            throughputs[src] = self.compute_throughput(pkts)
         return throughputs
 
     def get_source_mean_latency(self,pkts):
@@ -92,11 +93,11 @@ class QMetrics:
 
     def get_source_latencies(self):
         
-        delays= []
+        delays= {}
         #src is the ip address
         for src in self._data:
             pkts = self._data[src]
-            delays.append(self.get_source_mean_latency(pkts))
+            delays[src] = self.get_source_mean_latency(pkts)
         return delays
 
     def plot_rate(self):
