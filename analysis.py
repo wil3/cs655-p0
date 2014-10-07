@@ -2,7 +2,6 @@
 import time
 import numpy as np
 import scipy.stats as stats
-import matplotlib.pyplot as plt
 import math
 
 class QMetrics:
@@ -127,6 +126,7 @@ class QAnalysis:
         xticks: the labels for each tickmark of the x-axis
         data: a list of items of the form (label, avgresults)
         """
+        import matplotlib.pyplot as plt
         xlabel = "Sources"
 #TODO Figure out how we deal with running exp multiple times
         #data = []

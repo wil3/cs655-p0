@@ -1,6 +1,6 @@
 import logging
 import random
-import q_algs
+import main
 from packet import Packet
 
 class TrafficSource:
@@ -36,7 +36,6 @@ class TrafficSource:
             else:
                 l = len
             pkt = self.build_pkt(l,seq)
-            q_algs.PKT_COUNTER = q_algs.PKT_COUNTER + 1
             tx_delay = pkt.len/rate
 
             self.logger.debug(str(pkt.src) + "(" + str(pkt.len) + ")" + ">")
