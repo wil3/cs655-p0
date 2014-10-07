@@ -144,8 +144,12 @@ class QAnalysis:
                                 #usermedians=means)
                                 #conf_intervals=conf_intervals)
         means = [np.mean(dataset) for dataset in data]
-        conf_intervals = [stats.bayes_mvs(dataset, alpha=.9)[0][1]
-                          for dataset in data]
+        def get_conf_interval(dataset):
+            if len(dataset) > 1:
+                return stats.bayes_mvs(dataset, alpha=.9)[0][1]
+            else:
+                return (None, None)
+        conf_intervals = [get_conf_interval(dataset) for dataset in data]
         conf_interval_lower = [ci[0] for ci in conf_intervals]
         conf_interval_upper = [ci[1] for ci in conf_intervals]
         # mark the means separately, since it does not make sense to use means
