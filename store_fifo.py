@@ -13,15 +13,18 @@ class FIFOStore(QStore):
     def _do_get(self, event):
         if self.items:
             pkt = self.items.pop(0)
+            self._bufferoccupancy -= pkt.len
             pkt.set_depart_time(time.time())
             self._record(pkt)
             event.succeed(pkt)
             self.logger.debug(self._print_q_out())
 
     def _do_put(self,event):
-        event.item.set_arrive_time(time.time())
-        super(QStore, self)._do_put(event)
-        self.logger.debug(self._print_q_in())
+        if self._bufferoccupancy + event.item.len <= self._buffersize:
+            self._bufferoccupancy += event.item.len
+            event.item.set_arrive_time(time.time())
+            super(QStore, self)._do_put(event)
+            self.logger.debug(self._print_q_in())
 
     def print_q(self, border):
         return border + "\n" + self._get_queue_str(self.items) + "\n" + border + "\n"

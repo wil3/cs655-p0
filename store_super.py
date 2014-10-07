@@ -9,17 +9,20 @@ class QStore(simpy.Store):
     protocol.
     """
     
-    def __init__(self, env):
+    def __init__(self, env, buffersize=100000):
         super(QStore, self).__init__(env)
         self._log = {}
         self.logger = logging.getLogger('q')
+        self._buffersize = buffersize
+        self._bufferoccupancy = 0
 
     def _do_put(self, event):
-#        self.logger.debug( "Do put" + str(event.item))
-#        event.item.set_arrive_time(time.time())
-#        self.logger.debug("Do put" + str(event.item))
+        self.logger.debug( "Do put" + str(event.item))
+        event.item.set_arrive_time(time.time())
+        self.logger.debug("Do put" + str(event.item))
+
+    def _do_get(self, event):
         pass
-#super(QStore, self)._do_put(event)
     
     def _record(self, pkt):
         if not (pkt.src in self._log):

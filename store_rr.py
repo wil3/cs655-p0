@@ -7,7 +7,7 @@ from packet import Packet
 class RRStore(QStore):
     """Round Robin queue"""
     
-    def __init__(self, env, buffersize=100000):
+    def __init__(self, env):
         """
         Initializes the Round Robin queue.
         This queue is actually composed of a `queue of queues'.
@@ -16,8 +16,6 @@ class RRStore(QStore):
         self._queues = {}
         self._queue_sizes = {}
         self._queue_tracker = []
-        self._buffersize = buffersize
-        self._bufferoccupancy = 0
 
 
     def _get_next_queue(self):
@@ -80,8 +78,8 @@ class RRStore(QStore):
 
     def _do_put(self, event):
         """Adds a packet"""
-        super(RRStore, self)._do_put(event)
         if sum([len(queue) for queue in self._queues.values()]) < self._capacity:
+            super(RRStore, self)._do_put(event)
             key = (event.item.src, event.item.dst)
             val = event.item
             self._add_to_queue(key, val)

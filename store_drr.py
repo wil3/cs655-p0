@@ -7,7 +7,7 @@ from packet import Packet
 class DRRStore(RRStore):
     """Deficit Round Robin queue"""
     
-    def __init__(self, env, buffersize=100000, deficitcounter=500):
+    def __init__(self, env, deficitcounter=500):
         """
         Initializes the Deficit Round Robin queue.
         Like the Round Robin queue, this queue is composed of a `queue of
@@ -16,7 +16,7 @@ class DRRStore(RRStore):
         turn
         buffersize: number of bits that can be held by the queue at a time
         """
-        super(DRRStore, self).__init__(env, buffersize)
+        super(DRRStore, self).__init__(env)
         self.__deficits = {}
         self.__deficitcounter = deficitcounter
 
