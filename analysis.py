@@ -137,7 +137,7 @@ class QAnalysis:
         plt.ylabel(ylabel)
         plt.title(label)
         xtickslocs = range(1, len(xticks)+1)
-        plt.xticks(xtickslocs, xticks)
+        plt.xticks(xtickslocs, xticks, rotation=80)
         # create the box plot:
         this_plot = plt.boxplot(data)
                                 #notch=True,
@@ -165,4 +165,5 @@ class QAnalysis:
 ##        for (desired_mean, displayed_mean) in zip(means, displayed_means):
 ##            assert desired_mean == displayed_mean
         # displaying the plot:
+        plt.tight_layout()
         plt.show()
