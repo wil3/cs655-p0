@@ -152,6 +152,15 @@ if __name__ == "__main__":
     group.add_argument('--drr', action='store_true')
 
     args = parser.parse_args()
+    if args.fifo:
+        store_type = "fifo"
+    elif args.rr:
+        store_type = "rr"
+    elif args.drr:
+        store_type = "drr"
+    else:
+        assert False
+    
     rate = args.M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
     #rogue is last...
     rates = [rate]*(FTP_SOURCES + TELENET_SOURCES)
@@ -175,6 +184,12 @@ if __name__ == "__main__":
     #print "Sources", sources
     if args.p:
         an = QAnalysis()
-        an.plot("Average Measured/Actual Throughput Difference","Measured rate - offered load (bps)", sources, t)
-        an.plot("Average Source Latencies","Latency (seconds) ", sources, l)
+        an.plot(
+            "Average Measured/Actual Throughput Difference",
+            "Measured rate - offered load (bps)",
+            sources, t, "img_%s_%s_%s.png" % (store_type, "tput", str(args.M)))
+        an.plot(
+            "Average Source Latencies",
+            "Latency (seconds) ",
+            sources, l, "img_%s_%s_%s.png" % (store_type, "latency", str(args.M)))
     

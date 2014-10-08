@@ -137,7 +137,7 @@ class QAnalysis:
     def __init__(self):
         pass
 
-    def plot(self, label, ylabel, xticks, data):
+    def plot(self, label, ylabel, xticks, data, filename):
         """
         label: the plot label
         ylabel: the y-axis label
@@ -186,4 +186,6 @@ class QAnalysis:
 ##            assert desired_mean == displayed_mean
         # displaying the plot:
         plt.tight_layout()
-        plt.show()
+        plt.savefig(filename)
+        plt.clear()
+        #plt.show()
