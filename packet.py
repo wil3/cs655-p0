@@ -48,7 +48,12 @@ class Packet:
         """
         Gives a text representation of the packet.
         """
-        return "%d\t%s(%d)\tdepart=%f\tarrive=%f\tq=%f\ttx=%f" % (self.seq, self.src, self.len,self.depart_time, self.arrive_time, self.get_queue_delay(), self.tx_time)
+        bps = 0
+        delta = self.tx_time - self.arrive_time
+        if delta > 0:
+            print "Delta ", delta
+            bps = self.len / (delta *1.0)
+        return "%d\t%s -> %d(%d)\tdepart=%f\tarrive=%f\tq=%f\ttx=%f\td=%f\tbps=%f" % (self.seq, self.src, self._dport,self.len,self.depart_time, self.arrive_time, self.get_queue_delay(), self.tx_time, delta, bps)
 
 
 

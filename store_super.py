@@ -1,6 +1,5 @@
 import logging
 import simpy
-import time
 
 class QStore(simpy.Store):
     """
@@ -15,10 +14,11 @@ class QStore(simpy.Store):
         self.logger = logging.getLogger('q')
         self._buffersize = buffersize
         self._bufferoccupancy = 0
+        self.env = env
 
     def _do_put(self, event):
         self.logger.debug( "Do put" + str(event.item))
-        event.item.set_arrive_time(time.time())
+        event.item.set_arrive_time(self.env.now)
         self.logger.debug("Do put" + str(event.item))
 
     def _do_get(self, event):

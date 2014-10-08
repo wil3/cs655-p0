@@ -39,6 +39,24 @@ class QMetrics:
                 first_pkt = pkt
 
         return first_pkt
+    
+    def get_last_transmitted(self, pkts):
+        """
+        Last bit of last packet transmitted
+        
+        pkts: dict with key=sequence number, value=packet
+
+        returns the last packet that was transmitted by the source or None if 
+        the source didnt have any packets
+        """
+        last_pkt = None
+        last_tx = 0
+        for seq in pkts:
+            pkt = pkts[seq]
+            if pkt.tx_time > last_tx:
+                last_tx = pkt.tx_time
+                last_pkt = pkt
+        return last_pkt
 
     def compute_throughput(self, pkts):
         """ 
@@ -53,7 +71,7 @@ class QMetrics:
         #packet to arrive
         a=self.get_first_arrived_packet(pkts).get_arrive_time()
         seq_last=max(pkts.keys())
-        f=pkts[seq_last].tx_time
+        f=self.get_last_transmitted(pkts).tx_time
 
         return b/(f-a)
 
@@ -151,7 +169,8 @@ class QAnalysis:
             else:
                 return (None, None)
         conf_intervals = [get_conf_interval(dataset) for dataset in data]
-        conf_interval_lower = [ci[0] for ci in conf_intervals]
+        #Must be positive
+        conf_interval_lower = [max(0,ci[0]) for ci in conf_intervals]
         conf_interval_upper = [ci[1] for ci in conf_intervals]
         # mark the means separately, since it does not make sense to use means
         # instead of medians in a box plot:

@@ -7,7 +7,6 @@ logger = logging.getLogger('q')
 
 import argparse
 import simpy
-import time
 from store_fifo import FIFOStore
 from store_rr import RRStore
 from store_drr import DRRStore
@@ -17,7 +16,7 @@ from analysis import *
 #This specifices how many packets we can receive at a time
 START_IP = 100
 BASE_IP = "192.168.1."
-FTP_PORT = 20
+FTP_PORT = 21
 FTP_LENGTH = 8192 #bits
 FTP_SOURCES = 6
 TELENET_PORT = 23
@@ -25,8 +24,8 @@ TELENET_LENGTH = 512 #bits
 TELENET_SOURCES = 4
 ROUGE_SOURCES = 1 
 ROUTER_IP = "192.168.1.1"
-PKT_CREATE_MAX = 1000
-ROGUE_LENGTH = 5000 #bits
+ROGUE_LENGTH = 5000 #constant bits
+ROGUE_PORT = 2222 # rogue any port
 
 class Router:
     def __init__(self, env, store):
@@ -47,7 +46,7 @@ class Router:
             
             #TODO Is this going to work for all algs?
             #self.store._log[pkt.src][pkt.seq].tx_time = time.time()
-            pkt.tx_time = time.time()
+            pkt.tx_time = self.env.now 
 
 
 
@@ -110,8 +109,8 @@ def run(args):
     create_sources(env, store, FTP_SOURCES, 0, FTP_PORT, rate, FTP_LENGTH, True, pkt_pool)
     #create telnet sources
     create_sources(env, store, TELENET_SOURCES, FTP_SOURCES, TELENET_PORT, rate, TELENET_LENGTH, True, pkt_pool)
-    #Create rouge
-    create_sources(env, store, ROUGE_SOURCES, TELENET_SOURCES+FTP_SOURCES, 1234, 0.5, ROGUE_LENGTH, False, pkt_pool)
+    #Create rogue source but with constant payload
+    create_sources(env, store, ROUGE_SOURCES, TELENET_SOURCES+FTP_SOURCES, ROGUE_PORT, 0.5, ROGUE_LENGTH, False, pkt_pool)
 
     router = Router(env,store)
     env.process(router.tx())

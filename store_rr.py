@@ -1,5 +1,4 @@
 import simpy
-import time
 
 from store_super import QStore
 from packet import Packet
@@ -93,7 +92,7 @@ class RRStore(QStore):
         item = None
         packet = self._get_packet()
         if packet:
-            packet.set_depart_time(time.time())
+            packet.set_depart_time(self.env.now)
             self._record(packet)
             event.succeed(packet)
             self.logger.debug(self._print_q_out())

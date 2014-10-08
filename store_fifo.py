@@ -1,6 +1,5 @@
 import logging
 import simpy
-import time
 
 from store_super import QStore
 from packet import Packet
@@ -14,7 +13,7 @@ class FIFOStore(QStore):
         if self.items:
             pkt = self.items.pop(0)
             self._bufferoccupancy -= pkt.len
-            pkt.set_depart_time(time.time())
+            pkt.set_depart_time(self.env.now)
             self._record(pkt)
             event.succeed(pkt)
             self.logger.debug(self._print_q_out())
@@ -22,7 +21,7 @@ class FIFOStore(QStore):
     def _do_put(self,event):
         if self._bufferoccupancy + event.item.len <= self._buffersize:
             self._bufferoccupancy += event.item.len
-            event.item.set_arrive_time(time.time())
+            event.item.set_arrive_time(self.env.now)
             super(QStore, self)._do_put(event)
             self.logger.debug(self._print_q_in())
 
