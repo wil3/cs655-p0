@@ -1,10 +1,6 @@
 
 
 import logging
-
-logging.basicConfig(format='%(message)s', filemode='w', filename='q.out', level=logging.DEBUG)
-logger = logging.getLogger('q')
-
 import argparse
 import simpy
 import numpy as np
@@ -151,6 +147,7 @@ if __name__ == "__main__":
     group.add_argument('--rr', action='store_true')
     group.add_argument('--drr', action='store_true')
 
+    # set the output filenames:
     args = parser.parse_args()
     if args.fifo:
         store_type = "fifo"
@@ -160,6 +157,13 @@ if __name__ == "__main__":
         store_type = "drr"
     else:
         assert False
+    filenamebody = "%s_%s" % (store_type, str(args.M))
+    logging.basicConfig(
+        format='%(message)s',
+        filemode='w',
+        filename= "log_%s.out" % filenamebody,
+        level=logging.DEBUG)
+    logger = logging.getLogger('q')
     
     rate = args.M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
     #rogue is last...
@@ -187,9 +191,9 @@ if __name__ == "__main__":
         an.plot(
             "Average Measured/Actual Throughput Difference",
             "Measured rate - offered load (bps)",
-            sources, t, "img_%s_%s_%s.png" % (store_type, "tput", str(args.M)))
+            sources, t, "img_%s_%s.png" % (store_type, "tput"))
         an.plot(
             "Average Source Latencies",
             "Latency (seconds) ",
-            sources, l, "img_%s_%s_%s.png" % (store_type, "latency", str(args.M)))
+            sources, l, "img_%s_%s.png" % (filenamebody, "latency"))
     
