@@ -187,5 +187,5 @@ class QAnalysis:
         # displaying the plot:
         plt.tight_layout()
         plt.savefig(filename)
-        plt.clear()
+#        plt.clear()
         #plt.show()

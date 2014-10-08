@@ -1,5 +1,5 @@
 
-
+import os
 import logging
 import argparse
 import simpy
@@ -81,20 +81,21 @@ def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate, po
         #print "Creating ", str(s)
         env.process(s.tx(rate, mu_len, variate))
 
-def run(args, rate):
+def run(alg, n, rate):
     """
     Return tuple of latencies and throughputs
     """
+    logger = logging.getLogger('q')
     env = simpy.Environment()
-    pkt_pool = simpy.Container(env, init=args.n, capacity=args.n)
+    pkt_pool = simpy.Container(env, init=n, capacity=n)
     store = None
-    if args.fifo:
+    if alg == 'fifo':
         logger.debug("Using FIFO Algorithm")
         store = FIFOStore(env) #simpy.Store(env, capacity=RECQ_SIZE)
-    elif args.rr:
+    elif alg == 'rr':
         logger.debug("Using RR Algorithm")
         store = RRStore(env)
-    elif args.drr: #drr
+    elif alg == 'drr': #drr
         logger.debug("Using DRR Algorithm")
         store = DRRStore(env)
     else:
@@ -122,7 +123,55 @@ def run(args, rate):
 
 
 
+def main(M, x, n, alg, shouldPlot):
 
+    """
+    M: total load
+    x: number of experiments
+    n: number of packets
+    alg: one of fifo, rr, drr
+    shouldPlot: boolean whether to plot or no
+    """
+
+    filenamebody = "%s_%s" % (alg, str(M))
+    logging.basicConfig(
+        format='%(message)s',
+        filemode='w',
+        filename= "log_%s.out" % filenamebody,
+        level=logging.DEBUG)
+    
+    rate = M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
+    #rogue is last...
+    rates = [rate]*(FTP_SOURCES + TELENET_SOURCES)
+    rates.append(ROGUE_RATE)
+    l = [[] for srcnum in xrange(sum(get_total_number_sources()))]
+    t = [[] for srcnum in xrange(sum(get_total_number_sources()))]
+    for i in range(x):
+        print "Running experiment..."
+        (srcs, delay, tput) = run(alg, n, rate)
+        sources = srcs
+        i=0
+        print "Rates", rates
+        print "Measured throughput " , tput
+        for s in srcs:
+            l[s].append(delay[s])
+            t[s].append(tput[s] - rates[i])
+            i = i+1
+    #print "All latencies", l
+    print "All throughputs", t
+    sources = get_real_source_list()
+    #print "Sources", sources
+    if shouldPlot:
+        an = QAnalysis()
+        an.plot(
+            "Average Measured/Actual Throughput Difference",
+            "Measured rate - offered load (bps)",
+            sources, t, "report%simg_%s_%s.png" % (os.sep, alg, "tput"))
+        an.plot(
+            "Average Source Latencies",
+            "Latency (seconds) ",
+            sources, l, "report%simg_%s_%s.png" % (os.sep, filenamebody, "latency"))
+    
 
 
 
@@ -149,6 +198,7 @@ if __name__ == "__main__":
 
     # set the output filenames:
     args = parser.parse_args()
+    store_type = None
     if args.fifo:
         store_type = "fifo"
     elif args.rr:
@@ -157,43 +207,5 @@ if __name__ == "__main__":
         store_type = "drr"
     else:
         assert False
-    filenamebody = "%s_%s" % (store_type, str(args.M))
-    logging.basicConfig(
-        format='%(message)s',
-        filemode='w',
-        filename= "log_%s.out" % filenamebody,
-        level=logging.DEBUG)
-    logger = logging.getLogger('q')
-    
-    rate = args.M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
-    #rogue is last...
-    rates = [rate]*(FTP_SOURCES + TELENET_SOURCES)
-    rates.append(ROGUE_RATE)
-    l = [[] for srcnum in xrange(sum(get_total_number_sources()))]
-    t = [[] for srcnum in xrange(sum(get_total_number_sources()))]
-    for i in range(args.x):
-        print "Running experiment..."
-        (srcs, delay, tput) = run(args, rate)
-        sources = srcs
-        i=0
-        print "Rates", rates
-        print "Measured throughput " , tput
-        for s in srcs:
-            l[s].append(delay[s])
-            t[s].append(tput[s] - rates[i])
-            i = i+1
-    #print "All latencies", l
-    print "All throughputs", t
-    sources = get_real_source_list()
-    #print "Sources", sources
-    if args.p:
-        an = QAnalysis()
-        an.plot(
-            "Average Measured/Actual Throughput Difference",
-            "Measured rate - offered load (bps)",
-            sources, t, "img_%s_%s.png" % (store_type, "tput"))
-        an.plot(
-            "Average Source Latencies",
-            "Latency (seconds) ",
-            sources, l, "img_%s_%s.png" % (filenamebody, "latency"))
-    
+
+    main(args.M, args.x, args.n, store_type, args.p)
