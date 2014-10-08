@@ -166,7 +166,7 @@ def main(M, x, n, alg, shouldPlot):
         an.plot(
             "Average Measured/Actual Throughput Difference",
             "Measured rate - offered load (bps)",
-            sources, t, "report%simg_%s_%s.png" % (os.sep, alg, "tput"))
+            sources, t, "report%simg_%s_%s.png" % (os.sep, filenamebody, "tput"))
         an.plot(
             "Average Source Latencies",
             "Latency (seconds) ",
