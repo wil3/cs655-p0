@@ -7,6 +7,7 @@ logger = logging.getLogger('q')
 
 import argparse
 import simpy
+import numpy as np
 from store_fifo import FIFOStore
 from store_rr import RRStore
 from store_drr import DRRStore
@@ -26,7 +27,7 @@ ROUGE_SOURCES = 1
 ROUTER_IP = "192.168.1.1"
 ROGUE_LENGTH = 5000 #constant bits
 ROGUE_PORT = 2222 # rogue any port
-
+ROGUE_RATE = 0.5
 class Router:
     def __init__(self, env, store):
         self.env = env
@@ -84,7 +85,7 @@ def create_sources(env, store, count, start_ip, dport, rate, mu_len, variate, po
         #print "Creating ", str(s)
         env.process(s.tx(rate, mu_len, variate))
 
-def run(args):
+def run(args, rate):
     """
     Return tuple of latencies and throughputs
     """
@@ -104,13 +105,12 @@ def run(args):
         assert False, "not given a queue algorithm  type argument"
 #TODO mofidy these values
 
-    rate = args.M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
     #create ftp sources
     create_sources(env, store, FTP_SOURCES, 0, FTP_PORT, rate, FTP_LENGTH, True, pkt_pool)
     #create telnet sources
     create_sources(env, store, TELENET_SOURCES, FTP_SOURCES, TELENET_PORT, rate, TELENET_LENGTH, True, pkt_pool)
     #Create rogue source but with constant payload
-    create_sources(env, store, ROUGE_SOURCES, TELENET_SOURCES+FTP_SOURCES, ROGUE_PORT, 0.5, ROGUE_LENGTH, False, pkt_pool)
+    create_sources(env, store, ROUGE_SOURCES, TELENET_SOURCES+FTP_SOURCES, ROGUE_PORT, ROGUE_RATE, ROGUE_LENGTH, False, pkt_pool)
 
     router = Router(env,store)
     env.process(router.tx())
@@ -118,8 +118,8 @@ def run(args):
     env.run()
     
     an = QMetrics(store.get_log())
-    print "Summary of results: "
-    an.print_data()
+    #print "Summary of results: "
+    #an.print_data()
     #The order of the data matches the source list so it needs to be returned
     #as well
     return (an.get_source_list(), an.get_source_latencies(), an.get_source_throughputs())
@@ -152,24 +152,29 @@ if __name__ == "__main__":
     group.add_argument('--drr', action='store_true')
 
     args = parser.parse_args()
+    rate = args.M/((FTP_SOURCES + TELENET_SOURCES)*1.0)
+    #rogue is last...
+    rates = [rate]*(FTP_SOURCES + TELENET_SOURCES)
+    rates.append(ROGUE_RATE)
     l = [[] for srcnum in xrange(sum(get_total_number_sources()))]
     t = [[] for srcnum in xrange(sum(get_total_number_sources()))]
     for i in range(args.x):
         print "Running experiment..."
-        (srcs, delay, tput) = run(args)
+        (srcs, delay, tput) = run(args, rate)
         sources = srcs
+        i=0
+        print "Rates", rates
+        print "Measured throughput " , tput
         for s in srcs:
             l[s].append(delay[s])
-            t[s].append(tput[s])
-    print "All latencies", l
+            t[s].append(tput[s] - rates[i])
+            i = i+1
+    #print "All latencies", l
     print "All throughputs", t
     sources = get_real_source_list()
-    print "Sources", sources
+    #print "Sources", sources
     if args.p:
         an = QAnalysis()
-        an.plot("Source Throughput","Throughput (bps)", sources, t)
-        an.plot("Source Latencies","Latency", sources, l)
-#    an.print_data()
-#    an.plot_rate()
-#    AN.PLOt_latency()
+        an.plot("Average Measured/Actual Throughput Difference","Measured rate - offered load (bps)", sources, t)
+        an.plot("Average Source Latencies","Latency (seconds) ", sources, l)
     

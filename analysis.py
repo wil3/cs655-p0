@@ -170,7 +170,7 @@ class QAnalysis:
                 return (None, None)
         conf_intervals = [get_conf_interval(dataset) for dataset in data]
         #Must be positive
-        conf_interval_lower = [max(0,ci[0]) for ci in conf_intervals]
+        conf_interval_lower = [ci[0] for ci in conf_intervals]
         conf_interval_upper = [ci[1] for ci in conf_intervals]
         # mark the means separately, since it does not make sense to use means
         # instead of medians in a box plot:
