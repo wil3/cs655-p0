@@ -2,8 +2,55 @@
 
 \section{Experimental Results}
 
+\newcommand{\makecaption}[2]{Thoughput and Latency for the #1 algorithm, with $M = #2$.
+The first graph shows the average latency for each source. 
+Red dots denote the $.9$ confidence intervals, and blue dots denote the mean.
+The second graph shows the difference between the measured and the actual throughputs for each source, and
+the third graph shows the measured throughput for each source.}
+
+\newcommand{\makefigure}[3]{
+\begin{figure}
+\centering
+\includegraphics[scale=.38]{img_#1_#2#3_latency.png}
+\includegraphics[scale=.38]{img_#1_#2#3_tput.png} \\
+\includegraphics[scale=.4]{img_#1_#2#3_tput_nodelta.png}
+\label{fig:#1#2#3}
+\caption{\makecaption{#1}{#2.#3}}
+\end{figure}
+}
+
+\newcommand{\makeallfigures}[1]{
+
+\makefigure{#1}{0}{4}
+
+\makefigure{#1}{0}{6}
+
+\makefigure{#1}{0}{8}
+
+\makefigure{#1}{1}{0}
+
+\makefigure{#1}{1}{2}
+
+\makefigure{#1}{1}{4}
+
+\makefigure{#1}{1}{6}
+
+\makefigure{#1}{1}{8}
+
+\makefigure{#1}{2}{0}
+}
+
+\newpage
 \subsection{FIFO Router}
 
+\makeallfigures{fifo}
+
+\newpage
 \subsection{RR Router}
 
+\makeallfigures{rr}
+
+\newpage
 \subsection{DRR Router}
+
+\makeallfigures{drr}
