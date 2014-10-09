@@ -1,28 +1,34 @@
 %!TEX root = report.tex
 
+
 \section{Program Documentation}
 
-We implemented this assignment in Python, and our architecture is built of off Simpy, a process-based discrete-event simulation library. Each source and the router is modelled as a processes while the transportation of packets are modelled as events. In our architecture we utilize a process interaction concept in Simpy known as Stores which allows the modelling of production and consumption of objects. 
+We implemented this assignment in Python, and our architecture is built of off Simpy, a process-based discrete-event simulation library. Each source and the router is modelled as a processes while the transportation of packets are modelled as events. 
 
-\subsection{Routers}
+\subsection{Queuing Algorithms}
 
-We took a class-based approach to implementing our router. 
-We created a router superclass (in `store\_super.py'), FIFO and RR router classes subclassing it (in `store\_fifo.py' and `store\_rr.py' respectively), and a DRR router class subclassing the RR router class (in `store\_drr.py').
+In our architecture we utilize a process interaction concept in Simpy known as Stores which allows the modelling of production and consumption of objects. Stores allow objects to be put and get from processes. 
+We abstract this concept to allow us to model the receiving and transmitting of packets by the router. 
+When packets are sent to the router they are put in the Store, likewise when the router transmits a packet from a queue it is get from the Store.  
+Fortunately Simpy allows for subclassing the Store class to provide your own implementation for how objects are put and get from the Store. 
+We created three subclasses, for each queuing algorithms providing a robust flexible framework that allows different algorithms to be easily simulated. These classes are store\_fifo.py, store\_rr.py and store\_drr.py.
 
 \subsection{Sources}
 
-Simpy provides another process interaction called Containers which allow the modelling of quantities of similar discrete objects. In order to limit the number of packets used in an experiment we use a container and fill it with the number of packets we want to run. Each source will then decrement the value in this container each time it creates a packet. When The container is empty, sources will no longer be able to create packets and once the router transmits the last packet the simulation will terminate.
+Simpy provides another process interaction concept called Containers which allow the modelling of quantities of similar discrete objects. In order to limit the number of packets used in an experiment we use a container and "fill it" with the number of packets we want to run. Each source will then decrement the value in this container each time it creates a packet. When The container is empty, sources will no longer be able to create packets and once the router transmits the last packet the simulation will terminate.
 
-\begin{equation}
-\sum 
-\end{equation}
+Each packet created by a source is represented by a packet object specifying its sequence number, source/destination addresses and the length of the packet. The source then transmits the packet which takes $L/r$ time, where $L$ is the length of the packet and $r$ is the transmission rate, the transmission delay is modelled by a time out for that processes. Once the simulation of transmission is complete the packet is put in the store signifying that the packet has reached the router.
+
+\subsection{Logging}
+
+In order to provide efficient debugging capabilities we created a logging utility that writes to a file the state of the queue during each event. This provides the user the ability to provide a full inspection to verify proper operation of the implemented queuing algorithm
 
 \subsection{Running Instructions}
 
 \subsubsection{Installation}
 In order to use Simpy on the csa2.bu.edu server we must use virtualenv to be able to install Python modules without root privilege in a sandbox environment. We created an install script that will download, install and configure our test environment so the experiments can be run.
 
-At the command line run the following
+At the command line run the following:
 
 \begin{lstlisting}
 ./install.sh
@@ -33,6 +39,39 @@ If you are confronted with permission denied error you may need to change the pe
 \begin{lstlisting}
 chmod 755 install.sh
 \end{lstlisting}
+
+Grab a coffee or tea and when you return the installation process should be complete. 
+
+\subsubsection{Running an experiment}
+It is important to note that the Python scripts \textbf{cannot be run directly}, they must utilize the virtualenv environment so the necessary modules will be imported. To make running experiments easier we have created bash scripts for each type of algorithm that includes the commands for running the code in the virtual environment. The main.py Python script will be executed in these bash scripts to run the experiment. This script has the following parameters:
+
+-M [M] where [M] is an integer value specifying the total offered load, -x [X] where [X] is an integer value specifying the number of experiments to run, -n [N] where [N] is an integer value specifying how many packets to use in the experiment, -p is an optional flag indicating plots are to be generated and lastly the algorithm must be specified, one of --fifo, --rr, --drr, indicating FIFO, round robin and deficit round robin respectively.
+
+An example of a typical command we used to run 10 experiments with 100,000 packets, total offered load of 1 for fifo algorithm and plot generation would be:
+
+\begin{lstlisting}
+python main.py -x 10 -M 1 -n 100000 --fifo -p
+\end{lstlisting}
+
+As previously mentioned we made it easier to run in the virtual environment by creating individual scripts to run. To run an experiment simulating the FIFO algorithm run the following at the command line:
+
+\begin{lstlisting}
+./exp_fifo.sh
+\end{lstlisting}
+
+To run an experiment simulating the round robin algorithm:
+
+\begin{lstlisting}
+./exp_rr.sh
+\end{lstlisting}
+
+And deficit round robin algorithm:
+
+\begin{lstlisting}
+./exp_drr.sh
+\end{lstlisting}
+
+If for any reason these commands fail for permission issues run chmod 755 and the file name was previously demonstrated.
 
 \subsection{Statistics Collection}
 
