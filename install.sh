@@ -10,7 +10,7 @@ python virtualenv-1.9/virtualenv.py --system-site-packages ve_pa0
 #cd ve_pa0
 
 #activate ve and now pip is available to install dependencies
-source virtualenv-1.9/ve_pa0/bin/activate
+source ve_pa0/bin/activate
 #Install simpy
 pip install simpy
 #now run our code
