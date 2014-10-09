@@ -2,6 +2,10 @@
 
 \section{Discussion}
 
+FIFO offers no notion of fairness.
+RR services sources fairly as long as their packet sizes are more or less the same.
+DRR offers fairness even when packet sizes vary.
+
 Let $q$ be the number of sources sending packets through the router, and $b$ be the size of the router's buffer.
 $c$ is a constant that is defined in our discussion below.
 

@@ -42,7 +42,7 @@ class TrafficSource:
             yield self.env.timeout(tx_delay) #This symbolizes the transmission delay
             self.store.put(pkt) #And the packet added to the queue
             seq = seq + 1
-            yield self._pkt_pool.get(1)
+            self._pkt_pool.get(1)
 #            print "[" + str(self.env.now) 
             
     def build_pkt(self,l, seq):

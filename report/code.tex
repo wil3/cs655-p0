@@ -1,4 +1,4 @@
-%!TEX root = report.tex
+%!TEX root = code_formated.tex
 
 
 \section{Program Documentation}
@@ -21,7 +21,54 @@ Each packet created by a source is represented by a packet object specifying its
 
 \subsection{Logging}
 
-In order to provide efficient debugging capabilities we created a logging utility that writes to a file the state of the queue during each event. This provides the user the ability to provide a full inspection to verify proper operation of the implemented queuing algorithm
+In order to provide efficient debugging capabilities we created a logging utility that writes to a file the state of the queue during each event. This provides the user the ability to provide a full inspection to verify proper operation of the implemented queuing algorithm. An example of an output for FIFO is given below.
+
+\begin{verbatim}
+4(12186)@15755.0>
+<<----------
+976|2159|197|1076|885|519|745|590|3151|
+<<----------
+<<7(976)
+----------<<
+2159|197|1076|885|519|745|590|3151|177|
+----------<<
+\end{verbatim}
+
+In the above example, source 4 (or 192.168.1.104) sends a packet of size 12186 at simulation time 15755. The state of the queue at that time is shown after. The packet of size 976 from source 7 is then transmitted by the router indicated by <<7(976). The state of the queue after 7s packet is transmitted is then show. We can see in the FIFO queue that the packet is no longer in the queue.
+
+An example of how round-robin and deficit round-robin are logged are displayed below.
+
+\begin{verbatim}
+<<----------
+0	6990
+1	
+3	
+8	23|103|59|344|1148|641
+9	239|996|433
+4	7845|497
+6	253|428|76|427|247|100|88
+5	6571
+7	733
+10	5000|5000|5000
+<<----------
+<<9(239)
+----------<<
+0	6990
+1	
+3	
+8	23|103|59|344|1148|641
+9	996|433|1705
+4	7845|497
+6	253|428|76|427|247|100|88
+5	6571
+7	733
+10	5000|5000|5000
+----------<<
+\end{verbatim}
+
+In this example all of the source numbers are displayed on the left while each queue for the source is adjacent to its label. We can see that the router transmitted packet from source 9 of length 239 and at the next queue display this value has been popped off.
+
+
 
 \subsection{Running Instructions}
 
@@ -49,9 +96,9 @@ It is important to note that the Python scripts \textbf{cannot be run directly},
 
 An example of a typical command we used to run 10 experiments with 100,000 packets, total offered load of 1 for fifo algorithm and plot generation would be:
 
-\begin{lstlisting}
+\begin{verbatim}
 python main.py -x 10 -M 1 -n 100000 --fifo -p
-\end{lstlisting}
+\end{verbatim}
 
 As previously mentioned we made it easier to run in the virtual environment by creating individual scripts to run. To run an experiment simulating the FIFO algorithm run the following at the command line:
 
@@ -71,7 +118,7 @@ And deficit round robin algorithm:
 ./exp_drr.sh
 \end{lstlisting}
 
-If for any reason these commands fail for permission issues run chmod 755 and the file name was previously demonstrated.
+If for any reason these commands fail for permission issues run chmod 755 and the file name was previously demonstrated. To test different parameters for the experiment, open the corresponding bash script with your favorite text editor and make the command line parameter changes to the main.py command. While the script runs it will output summary of results and at the end it will output a log file with the suffix .out.
 
 \subsection{Statistics Collection}
 

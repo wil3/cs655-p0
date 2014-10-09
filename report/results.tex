@@ -2,6 +2,12 @@
 
 \section{Experimental Results}
 
+Throughout this section, we show graphs depicting our results.
+Each graph has data for 11 sources.
+Sources who connect to port 21 are FTP sources, and sources who connect to port 23 are TELNET sources.
+The rogue sources connects to `?'.
+The port number is shown in parentheses at the end of the source ip.
+
 \newcommand{\makecaption}[2]{Thoughput and Latency for the #1 algorithm, with $M = #2$.
 The first graph shows the average latency for each source. 
 Red dots denote the $.9$ confidence intervals, and blue dots denote the mean.
@@ -43,14 +49,32 @@ the third graph shows the measured throughput for each source.}
 \newpage
 \subsection{FIFO Router}
 
+For FIFO, at high load the throughput of each source is proportional to its sending rate: 
+the throughput for the well-behaved sources is $.08 = .2 * .4$, and the throughput for the rogue source is $.2 = .5 * .4$.
+Total throughput is $.8 * 10 + .2 = 1$.
+The latency for all sources is more or less equal.
+
+Higher loads lead to higher delay.
+TELNET sources experience even higher delays than the FTP sources, because the TELNET sources send packets with a relatively low frequency.
+
 \makeallfigures{fifo}
 
 \newpage
 \subsection{RR Router}
 
+For RR, at low load the throughput of each source is proportional to its sending rate.
+At high load, the throughput of each source should be proportional to its packet size.
+
+Higher loads lead to higher delay.
+
 \makeallfigures{rr}
 
 \newpage
 \subsection{DRR Router}
+
+For RR, at low load the throughput of each source is proportional to its sending rate.
+At high load, the throughput of each source should be proportional to its packet size.
+
+Higher loads lead to higher delay.
 
 \makeallfigures{drr}
