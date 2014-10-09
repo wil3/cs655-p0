@@ -70,7 +70,6 @@ class QMetrics:
         #First packet (seq=0) might actually be large and not be the first 
         #packet to arrive
         a=self.get_first_arrived_packet(pkts).get_arrive_time()
-        seq_last=max(pkts.keys())
         f=self.get_last_transmitted(pkts).tx_time
 
         return b/(f-a)
@@ -187,5 +186,5 @@ class QAnalysis:
         # displaying the plot:
         plt.tight_layout()
         plt.savefig(filename)
-#        plt.clear()
+        plt.close()
         #plt.show()
