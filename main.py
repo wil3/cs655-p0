@@ -134,7 +134,7 @@ def main(M, x, n, alg, shouldPlot):
     """
 
     filenamebody = "%s_%s" % (alg, str(M))
-    filenamebody.replace(".", "")
+    filenamebody = filenamebody.replace(".", "")
     logging.basicConfig(
         format='%(message)s',
         filemode='w',
@@ -147,6 +147,7 @@ def main(M, x, n, alg, shouldPlot):
     rates.append(ROGUE_RATE)
     l = [[] for srcnum in xrange(sum(get_total_number_sources()))]
     t = [[] for srcnum in xrange(sum(get_total_number_sources()))]
+    tnd = [[] for srcnum in xrange(sum(get_total_number_sources()))]
     for i in range(x):
         print "Running experiment..."
         (srcs, delay, tput) = run(alg, n, rate)
@@ -157,6 +158,7 @@ def main(M, x, n, alg, shouldPlot):
         for s in srcs:
             l[s].append(delay[s])
             t[s].append(tput[s] - rates[i])
+            tnd[s].append(tput[s])
             i = i+1
     #print "All latencies", l
     print "All throughputs", t
@@ -169,10 +171,13 @@ def main(M, x, n, alg, shouldPlot):
             "Measured rate - offered load (bps)",
             sources, t, "report%simg_%s_%s.png" % (os.sep, filenamebody, "tput"))
         an.plot(
+            "Average Measured Throughput",
+            "Throughput (bps)",
+            sources, tnd, "report%simg_%s_%s.png" % (os.sep, filenamebody, "tput_nodelta"))
+        an.plot(
             "Average Source Latencies",
             "Latency (seconds) ",
             sources, l, "report%simg_%s_%s.png" % (os.sep, filenamebody, "latency"))
-    
 
 
 
