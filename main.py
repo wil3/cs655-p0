@@ -134,6 +134,7 @@ def main(M, x, n, alg, shouldPlot):
     """
 
     filenamebody = "%s_%s" % (alg, str(M))
+    filenamebody.replace(".", "")
     logging.basicConfig(
         format='%(message)s',
         filemode='w',
