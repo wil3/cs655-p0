@@ -1,0 +1,33 @@
+%!TEX root = report.tex
+
+\section{Discussion}
+
+Let $q$ be the number of sources sending packets through the router, and $b$ be the size of the router's buffer.
+$c$ is a constant that is defined in our discussion below.
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Algorithm & time complexity & space complexity \\ \hline \hline
+FIFO & $O(1)$ & $b + O(1)$ \\ \hline
+RR & $O(1)$ & $b + c + O(1)$ \\ \hline
+DRR & $O(1)$ & $b + 2c + O(1)$ \\ \hline
+\end{tabular}
+\end{center}
+
+Note that for `space complexity' we consider the total number of space required by the router throughout its lifetime, whereas for `time complexity' we consider the cost of a single queueing or dequeuing operation. 
+
+All thee algorithms have constant time complexity.
+Note that a naive implementation of RR and DRR would have time complexity at least $O(log(q))$, in order to allow for finding the queue into which to add a new packet.
+However, both the RR and DRR can take advantage of hashing; they combine packets coming from sources which hash to the same value into one queue, thus capping the total number of queues at some constant value ($2^c$), and making it possible to find the queue corresponding to a given source in $c$ time.
+Note also that stealing buffer space from the correct queue in constant time is possible due to McKenney's work on buffer stealing.
+
+The space complexity differs for the three as follows: 
+FIFO stores a single queue the size of the buffer.
+RR stores a buffer full of queues, with a map from sources (or source hashes) to the queues.
+DRR stores the same items that RR stores, as well as another map from sources (or source hashes) to their current deficit.
+
+We think DRR is worth it. 
+It provides a much stronger guarantee of fairness, 
+while paying only a constant price in terms of space complexity. 
+Routers are not terribly space constrained, and can easily handle the storage of another constant-sized map.
