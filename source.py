@@ -40,7 +40,7 @@ class TrafficSource:
 
             self.logger.debug(str(pkt.src) + "(" + str(pkt.len) + ")" + ">")
             yield self.env.timeout(tx_delay) #This symbolizes the transmission delay
-            yield self.store.put(pkt) #And the packet added to the queue
+            self.store.put(pkt) #And the packet added to the queue
             seq = seq + 1
             yield self._pkt_pool.get(1)
 #            print "[" + str(self.env.now) 

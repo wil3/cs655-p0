@@ -7,10 +7,10 @@ def drange(start, stop, step):
         yield r
         r += step
 
-ms = drange(1.4, 2.0, 0.2)
-x = 10
+ms = drange(0.4, 2.0, 0.2)
+x = 5
 n = 100000
-algs = ['fifo', 'rr']
+algs = ['fifo', 'rr', 'drr']
 
 for m in ms:
 
